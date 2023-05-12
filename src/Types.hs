@@ -4,8 +4,21 @@ import Data.Char
 import System.Random.Stateful (uniformM, globalStdGen, randomRIO)
 import Control.Monad.State
 import Data.List (foldl')
+import Test.QuickCheck 
+--import qualified Sandbox as S 
 
 data Rotor = Rotor RotorPos RotorWiring RotorWiring deriving (Eq, Show)
+
+instance Arbitrary Rotor where
+    arbitrary = do
+                 n <- choose (-1, 10)
+                 rs <- shuffle [0..25] -- this needs to change for different rotor inputs/outputs
+                 let invRs = inverseRotorWiring rs
+                 return $ Rotor n rs invRs
+
+--sToG :: IO String -> Gen String
+--sToG s = s >>= (\s' -> return s')
+
 
 type Steps = Int
 
@@ -27,33 +40,37 @@ passRotor' :: Letter -> (RSteps, Rotor) -> Letter
 passRotor' l (stps, r) = let offsetStps = (l + stps) `mod` rotorSize
                           in ((r !! offsetStps) - stps) `mod` rotorSize
 -}
+
+stepsToNthRSteps :: Int -> Int -> Int
+stepsToNthRSteps stps n = (stps `div` rotorSize^n) `mod` rotorSize
+
 passRotorRToL :: Letter -> Steps -> Rotor -> Letter
-passRotorRToL l stps (Rotor (-1) r _) = let rStps = stps `mod` rotorSize
+passRotorRToL l stps (Rotor (-1) r _) = let rStps = stepsToNthRSteps stps 0
                                             offsetStps = (l + rStps) `mod` rotorSize
                                         in ((r !! offsetStps) - rStps) `mod` rotorSize
-passRotorRToL l stps (Rotor n r _) = let rStps = (stps `div` rotorSize^n) `mod` rotorSize
+passRotorRToL l stps (Rotor n r _) = let rStps = stepsToNthRSteps stps n
                                          offsetStps = (l + rStps) `mod` rotorSize
                                      in ((r !! offsetStps) - rStps) `mod` rotorSize
 
 passRotorLToR :: Letter -> Steps -> Rotor -> Letter
-passRotorLToR l stps (Rotor (-1) _ r') = let rStps = stps `mod` rotorSize
+passRotorLToR l stps (Rotor (-1) _ r') = let rStps = stepsToNthRSteps stps 0
                                              offsetStps = (l + rStps) `mod` rotorSize
                                          in ((r' !! offsetStps) - rStps) `mod` rotorSize
-passRotorLToR l stps (Rotor n _ r') = let rStps = (stps `div` rotorSize^n) `mod` rotorSize
+passRotorLToR l stps (Rotor n _ r') = let rStps = stepsToNthRSteps stps n
                                           offsetStps = (l + rStps) `mod` rotorSize
                                       in ((r' !! offsetStps) - rStps) `mod` rotorSize
 
+-- future function to make rotors from user input
+makeRotors :: [Rotor]
+makeRotors = [rotorI, reflectorB, rotorI] 
 
-
-makeTestRotor :: Rotor
-makeTestRotor = Rotor 0 testRotor0 invTestRotor0
 
 testRotor :: Rotor -> Bool 
 testRotor (Rotor _ r l) = let l' = inverseRotorWiring r 
                             in l == l'
 
 inverseRotorWiring :: RotorWiring -> RotorWiring
-inverseRotorWiring rss = let nullRotor = take 26 $ cycle [-1]
+inverseRotorWiring rss = let nullRotor = replicate 26 (-1)
                          in go rss 0 nullRotor 
                          where
                              go [] _ ns = ns
@@ -82,11 +99,6 @@ charToInt c = ord c - upperAlphaOffset
 intToChar :: Int -> Char
 intToChar n = chr $ n + upperAlphaOffset
 
-testRotor0 :: RotorWiring
-testRotor0 = map charToInt ['A'..'Z']
-
-invTestRotor0 :: RotorWiring
-invTestRotor0 = inverseRotorWiring testRotor0
 
 -- 0 is just a placeholder
 rotorI :: Rotor
@@ -117,5 +129,8 @@ testRotorIII = map charToInt  "BDFHJLCPRTXVZNYEIWGAKMUSQO"
 invTestRotorIII :: RotorWiring
 invTestRotorIII = inverseRotorWiring testRotorIII
 
-testReflectorB :: RotorWiring      --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testReflectorB = map charToInt "YRUHQSLDPXNGOKMIEBFZCWVJAT"
+testReflectorB :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+testReflectorB = map charToInt  "YRUHQSLDPXNGOKMIEBFZCWVJAT"
+
+reflectorB :: Rotor
+reflectorB = Rotor (-1) testReflectorB testReflectorB
