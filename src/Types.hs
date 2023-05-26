@@ -4,32 +4,47 @@ import Data.Char
 import System.Random.Stateful (uniformM, globalStdGen, randomRIO)
 import Control.Monad.State
 import Control.Monad
-import Data.List (foldl')
+--import Data.List (foldl')
 import Test.QuickCheck 
 
 --import qualified Sandbox as S 
 
-data Rotor = Rotor RotorPos RotorWiring deriving (Eq, Show)
+data Rotor = Rotor RotorPos StartPos RingSetting RotorWiring deriving (Eq, Show)
 type Rotors = [Rotor]
+type Reflector = Rotor
+type Plugboard = Rotor
 
 instance Arbitrary Rotor where
     arbitrary = do
                  n <- choose (-1, 10)
-                 rs <- shuffle [0..25] -- this needs to change for different rotor inputs/outputs
-                 return $ Rotor n rs
+                 st <- choose (0, 25)
+                 rs <- choose (0, 25)
+                 rw <- shuffle [0..25] -- this needs to change for different rotor inputs/outputs
+                 return $ Rotor n st rs (ringSetting rs rw)
 
 --sToG :: IO String -> Gen String
 --sToG s = s >>= (\s' -> return s')
 
 
+-- Start position, the inital offset of each rotor when step is zero
+-- Ring position, the internal offset/ difference of the letters moved back or fore
+-- Can the rotor step at different stages apart from the usual 26?
+-- Rotor notch, each rotor sets the next rotor at a different notch ie. I when Q to R
+-- Also double stepping, which i don't completely understand yet
+
 type Steps = Int
 
+type Turnover = Int
+type RingSetting = Int
+type StartPos = Int
 type RotorPos = Int
 type RotorWiring = [Int]
 
 type Letter = Int 
 type Outputs = [Letter]
 type MachineState = (Steps, Outputs, Rotors)
+
+
 
 -- type Offset = Int -- modified with mod rotorSize
 
@@ -69,11 +84,13 @@ makeState1 = (0, [], makeRotors1)
 stepsToNthRSteps :: Int -> Int -> Int
 stepsToNthRSteps stps n = (stps `div` rotorSize^n) `mod` rotorSize
 
+--stepsTurnoverCheck :: Int
+
 passRotor :: Letter -> Steps -> Rotor -> Letter
-passRotor l _ (Rotor (-1) r) = r !! l
-passRotor l stps (Rotor n r) = let rStps = stepsToNthRSteps stps n
-                                   offsetStps = (l + rStps) `mod` rotorSize
-                                     in ((r !! offsetStps) - rStps) `mod` rotorSize
+passRotor l _ (Rotor (-1) _ _ r) = r !! l -- plugboards and reflectors
+passRotor l stps (Rotor n st _ r) = let rStps = stepsToNthRSteps (stps + st) n 
+                                        offsetStps = (l + rStps) `mod` rotorSize
+                                    in ((r !! offsetStps) - rStps) `mod` rotorSize
 
 {-
 passRotorLToR :: Letter -> Steps -> Rotor -> Letter
@@ -91,7 +108,7 @@ makeRotors :: Rotors
 makeRotors = [rotorI, reflectorB, invRotorI] 
 
 makeRotors1 :: Rotors
-makeRotors1 = [rotorI, rotorII, rotorIII, reflectorB, invRotorIII, invRotorII, invRotorI]
+makeRotors1 = [plugboard, rotorI, rotorII, rotorIII, reflectorB, invRotorIII, invRotorII, invRotorI, plugboard]
 
 {-
 testRotor :: Rotor -> Bool 
@@ -132,25 +149,36 @@ intToChar n = chr $ n + upperAlphaOffset
 
 -- 0 is just a placeholder
 rotorI :: Rotor
-rotorI = Rotor 0 testRotorI 
+rotorI = Rotor 0 3 1 (ringSetting 1 testRotorI) 
 
 invRotorI :: Rotor
-invRotorI = Rotor 0 invTestRotorI
+invRotorI = Rotor 0 3 1 (ringSetting 1 invTestRotorI)
 
 rotorII :: Rotor
-rotorII = Rotor 1 testRotorII 
+rotorII = Rotor 1 0 0 testRotorII 
 
 invRotorII :: Rotor
-invRotorII = Rotor 1 invTestRotorII
+invRotorII = Rotor 1 0 0 invTestRotorII
 
 rotorIII :: Rotor
-rotorIII = Rotor 2 testRotorIII 
+rotorIII = Rotor 2 0 0 testRotorIII 
 
 invRotorIII :: Rotor
-invRotorIII = Rotor 2 invTestRotorIII
+invRotorIII = Rotor 2 0 0 invTestRotorIII
 
 testRotorI :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 testRotorI = map charToInt  "EKMFLGDQVZNTOWYHXUSPAIBRCJ"
+
+
+ringSetting :: Int -> RotorWiring -> RotorWiring
+ringSetting n rw = let c = cycleList (n `mod` rotorSize) rw
+                   in map (\i -> (i + n) `mod` rotorSize) c
+                   
+
+cycleList :: Int -> RotorWiring -> RotorWiring
+cycleList 0 xs = xs
+cycleList _ [] = []
+cycleList n xs = cycleList (n - 1) $ last xs : init xs
 
 invTestRotorI :: RotorWiring 
 invTestRotorI = inverseRotorWiring testRotorI
@@ -171,5 +199,17 @@ invTestRotorIII = inverseRotorWiring testRotorIII
 testReflectorB :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 testReflectorB = map charToInt  "YRUHQSLDPXNGOKMIEBFZCWVJAT"
 
-reflectorB :: Rotor
-reflectorB = Rotor (-1) testReflectorB 
+-- reflectors and plugboards are modelled as non rotating rotors
+
+-- plugboard with A-B, C-D pairings
+--"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+--"BADCEFGHIJKLMNOPQRSTUVWXYZ"
+
+testPlugboard :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+testPlugboard = map charToInt  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+reflectorB :: Reflector
+reflectorB = Rotor (-1) 0 0 testReflectorB 
+
+plugboard :: Plugboard
+plugboard = Rotor (-1) 0 0 testPlugboard
