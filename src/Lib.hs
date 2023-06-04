@@ -60,15 +60,13 @@ pressKey l s = let (result, s') = runState (encrypt l) s
                in pressKey result s'
                
 
-operate :: Letter -> Steps -> Rotors -> (MachineState, Rotors)
-operate l stps [p0,r0,r1,r2,rf,ir2,ir1,ir0,p1] = 
+nextStep :: Letter -> Steps -> Rotors -> (MachineState, Rotors)
+nextStep l stps [p0,r0,r1,r2,rf,ir2,ir1,ir0,p1] = 
                                   let fr = nextRotorsTurns [r0,r1,r2] 
                                       sr = reverse $ nextRotorsTurns [ir0,ir1,ir2]
                                       rs = [p0] ++ fr ++ [rf] ++ sr ++ [p1]
                                   in (pressKey l (stps + 1, [] , rs), rs) 
+nextStep _ _ _ = error "Impossibru!"
 
-operate _ _ _ = error "Impossibru!"
 
-
--- test code
 

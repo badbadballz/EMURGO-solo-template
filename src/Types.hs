@@ -7,6 +7,7 @@ import Data.Char
 --import Control.Monad
 --import Data.List (foldl')
 import Test.QuickCheck 
+import GHC.Base (VecElem(Int16ElemRep))
 
 --import qualified Sandbox as S 
 
@@ -187,6 +188,8 @@ data Rotor = Rotor { rotorPos :: Int
 -- rotorPos is the relative position in the enigma machine, not the rotor number
 -- startPos has to be initialised to turns when starting rotor
 
+-- test states and rotors
+
 makeState :: MachineState
 makeState = (0, [], makeRotors')
 
@@ -205,74 +208,88 @@ makeRotors2' = [plugboard, rotorI, rotorII, rotorIII, reflectorB]
 makeRotors3' :: Rotors
 makeRotors3' = [plugboard, rotorIV, rotorV, rotorI, reflectorB]
 
+r1Turnover :: Int
+r1Turnover = 16 
 
 rotorI :: Rotor
-rotorI = Rotor 0 0 0 0 16 (setRing 0 testRotorI) 
+rotorI = Rotor 0 0 0 0 16 (setRing 0 rotorIWiring) 
 --Rotor 0 3 1 (ringSetting 1 testRotorI) 
 
 invRotorI :: Rotor
-invRotorI = Rotor 0 0 0 0 16 (setRing 0 invTestRotorI)
+invRotorI = Rotor 0 0 0 0 16 (setRing 0 invRotorIWiring)
+
+r2Turnover :: Int
+r2Turnover = 4
 
 rotorII :: Rotor
-rotorII = Rotor 1 0 0 0 4 (setRing 0 testRotorII) 
+rotorII = Rotor 1 0 0 0 4 (setRing 0 rotorIIWiring) 
 
 invRotorII :: Rotor
-invRotorII = Rotor 1 0 0 0 4 (setRing 0 invTestRotorII)
+invRotorII = Rotor 1 0 0 0 4 (setRing 0 invRotorIIWiring)
+
+r3Turnover :: Int
+r3Turnover = 21
 
 rotorIII :: Rotor
-rotorIII = Rotor 2 0 0 0 21 (setRing 0 testRotorIII) 
+rotorIII = Rotor 2 0 0 0 21 (setRing 0 rotorIIIWiring) 
 
 invRotorIII :: Rotor
-invRotorIII = Rotor 2 0 0 0 21 (setRing 0 invTestRotorIII)
+invRotorIII = Rotor 2 0 0 0 21 (setRing 0 invRotorIIIWiring)
+
+r4Turnover :: Int
+r4Turnover = 9
 
 rotorIV :: Rotor
-rotorIV = Rotor 0 25 0 25 9 (setRing 0 testRotorIV)
+rotorIV = Rotor 0 0 0 0 9 (setRing 0 rotorIVWiring)
 
 invRotorIV :: Rotor
-invRotorIV = Rotor 0 25 0 25 9 (setRing 0 testInvRotorIV)
+invRotorIV = Rotor 0 25 0 25 9 (setRing 0 invRotorIVWiring)
+
+r5Turnover :: Int
+r5Turnover = 25
 
 rotorV :: Rotor
-rotorV = Rotor 1 8 0 8 25 (setRing 0 testRotorV)
+rotorV = Rotor 1 8 0 8 25 (setRing 0 rotorVWiring)
 
 invRotorV :: Rotor
-invRotorV = Rotor 1 8 0 8 25 (setRing 0 testInvRotorV)
+invRotorV = Rotor 1 8 0 8 25 (setRing 0 invRotorVWiring)
 
 
 
-testRotorI :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testRotorI = map charToInt  "EKMFLGDQVZNTOWYHXUSPAIBRCJ"
+rotorIWiring :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+rotorIWiring = map charToInt  "EKMFLGDQVZNTOWYHXUSPAIBRCJ"
 
 
-invTestRotorI :: RotorWiring 
-invTestRotorI = inverseRotorWiring testRotorI
+invRotorIWiring :: RotorWiring 
+invRotorIWiring = inverseRotorWiring rotorIWiring
 --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 --"UWYGADFPVZBECKMTHXSLRINQOJ"
-testRotorII :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testRotorII = map charToInt  "AJDKSIRUXBLHWTMCQGZNPYFVOE"
+rotorIIWiring :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+rotorIIWiring = map charToInt  "AJDKSIRUXBLHWTMCQGZNPYFVOE"
 
-invTestRotorII :: RotorWiring
-invTestRotorII = inverseRotorWiring testRotorII
+invRotorIIWiring :: RotorWiring
+invRotorIIWiring = inverseRotorWiring rotorIIWiring
 
-testRotorIII :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testRotorIII = map charToInt  "BDFHJLCPRTXVZNYEIWGAKMUSQO"
+rotorIIIWiring :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+rotorIIIWiring = map charToInt  "BDFHJLCPRTXVZNYEIWGAKMUSQO"
 
-invTestRotorIII :: RotorWiring
-invTestRotorIII = inverseRotorWiring testRotorIII
+invRotorIIIWiring :: RotorWiring
+invRotorIIIWiring = inverseRotorWiring rotorIIIWiring
 
-testRotorIV :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testRotorIV = map charToInt  "ESOVPZJAYQUIRHXLNFTGKDCMWB"
+rotorIVWiring :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+rotorIVWiring = map charToInt  "ESOVPZJAYQUIRHXLNFTGKDCMWB"
 
-testInvRotorIV :: RotorWiring
-testInvRotorIV = inverseRotorWiring testRotorIV 
+invRotorIVWiring :: RotorWiring
+invRotorIVWiring = inverseRotorWiring rotorIVWiring 
 
-testRotorV :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testRotorV = map charToInt  "VZBRGITYUPSDNHLXAWMJQOFECK"
+rotorVWiring :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+rotorVWiring = map charToInt  "VZBRGITYUPSDNHLXAWMJQOFECK"
 
-testInvRotorV :: RotorWiring
-testInvRotorV = inverseRotorWiring testRotorV
+invRotorVWiring :: RotorWiring
+invRotorVWiring = inverseRotorWiring rotorVWiring
 
-testReflectorB :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testReflectorB = map charToInt  "YRUHQSLDPXNGOKMIEBFZCWVJAT"
+reflectorBWiring :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+reflectorBWiring = map charToInt  "YRUHQSLDPXNGOKMIEBFZCWVJAT"
 
 -- reflectors and plugboards are modelled as non rotating rotors
 
@@ -280,11 +297,14 @@ testReflectorB = map charToInt  "YRUHQSLDPXNGOKMIEBFZCWVJAT"
 --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 --"BADCEFGHIJKLMNOPQRSTUVWXYZ"
 
-testPlugboard :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testPlugboard = map charToInt  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+plugboardWiring :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+plugboardWiring = map charToInt  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 reflectorB :: Reflector
-reflectorB = Rotor (-1) 0 0 0 0 testReflectorB 
+reflectorB = Rotor (-1) 0 0 0 0 reflectorBWiring 
 
 plugboard :: Plugboard
-plugboard = Rotor (-1) 0 0 0 0 testPlugboard
+plugboard = Rotor (-1) 0 0 0 0 plugboardWiring
+
+rotorIdWiring :: RotorWiring
+rotorIdWiring = map charToInt ['A'..'Z']
