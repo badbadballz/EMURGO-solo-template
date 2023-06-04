@@ -3,8 +3,22 @@ module Actions where
 import Lib
 import Types
 import Data.Char
+import System.IO
 
-
+operate :: Steps -> Rotors -> IO ()
+operate stps rs = do            
+                    putStrLn ""
+                    c <- getChar
+                    putStrLn ""
+                    if isValidChar c
+                    then do 
+                            let c' = (charToInt . toUpper) c
+                                ((stps', output, _), rs') = nextStep c' stps rs
+                                alphas = map intToChar output
+                            putStrLn (show stps' ++ " " ++ [head alphas] ++ " " ++ tail alphas)    
+                            operate stps' rs'
+                    else 
+                        operate stps rs
 
 -- assumes n = rotorNumber
 setRotors :: Int -> IO [(Rotor, Rotor)]

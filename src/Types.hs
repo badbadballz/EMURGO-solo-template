@@ -7,7 +7,7 @@ import Data.Char
 --import Control.Monad
 --import Data.List (foldl')
 import Test.QuickCheck 
-import GHC.Base (VecElem(Int16ElemRep))
+--import GHC.Base (VecElem(Int16ElemRep))
 
 --import qualified Sandbox as S 
 
@@ -39,6 +39,8 @@ alphabet = ['A' .. 'Z']
 
 rotorSize :: Int 
 rotorSize = 26
+
+rotorTypes = 5
 
 instance Arbitrary Rotor where
     arbitrary = do
@@ -188,25 +190,6 @@ data Rotor = Rotor { rotorPos :: Int
 -- rotorPos is the relative position in the enigma machine, not the rotor number
 -- startPos has to be initialised to turns when starting rotor
 
--- test states and rotors
-
-makeState :: MachineState
-makeState = (0, [], makeRotors')
-
-makeState1 :: MachineState
-makeState1 = (0, [], makeRotors1')
-
-makeRotors' :: Rotors
-makeRotors' = [rotorI, reflectorB, invRotorI] 
-
-makeRotors1' :: Rotors
-makeRotors1' = [plugboard, rotorI, rotorII, rotorIII, reflectorB, invRotorIII, invRotorII, invRotorI, plugboard]
-
-makeRotors2' :: Rotors
-makeRotors2' = [plugboard, rotorI, rotorII, rotorIII, reflectorB]
-
-makeRotors3' :: Rotors
-makeRotors3' = [plugboard, rotorIV, rotorV, rotorI, reflectorB]
 
 r1Turnover :: Int
 r1Turnover = 16 

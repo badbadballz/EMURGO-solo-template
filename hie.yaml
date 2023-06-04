@@ -1,0 +1,19 @@
+cradle:
+  cabal:
+    - path: "app/Main.hs"
+      component: "emurgo-project:exe:emurgo-project"
+      
+    - path: "src/Actions.hs"
+      component: "emurgo-project:exe:emurgo-project"
+
+    - path: "src/Lib.hs"
+      component: "emurgo-project:exe:emurgo-project"
+
+    - path: "src/Types.hs"
+      component: "emurgo-project:exe:emurgo-project"
+
+    - path: "src/Sandbox.hs"
+      component: "emurgo-project:exe:emurgo-project"
+
+    - path: "src/Test.hs"
+      component: "emurgo-project:exe:emurgo-project"
