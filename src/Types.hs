@@ -274,6 +274,12 @@ invRotorVWiring = inverseRotorWiring rotorVWiring
 reflectorBWiring :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 reflectorBWiring = map charToInt  "YRUHQSLDPXNGOKMIEBFZCWVJAT"
 
+reflectorCWiring :: RotorWiring
+reflectorCWiring = map charToInt "FVPJIAOYEDRZXWGCTKUQSBNMHL"
+
+makeReflector :: RotorWiring -> Reflector
+makeReflector = Rotor (-1) 0 0 0 0 
+
 -- reflectors and plugboards are modelled as non rotating rotors
 
 -- plugboard with A-B, C-D pairings
@@ -286,8 +292,8 @@ plugboardWiring = map charToInt  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 reflectorB :: Reflector
 reflectorB = Rotor (-1) 0 0 0 0 reflectorBWiring 
 
-plugboard :: Plugboard
-plugboard = Rotor (-1) 0 0 0 0 plugboardWiring
+makePlugboard :: RotorWiring -> Plugboard
+makePlugboard = Rotor (-1) 0 0 0 0 
 
 rotorIdWiring :: RotorWiring
 rotorIdWiring = map charToInt ['A'..'Z']
