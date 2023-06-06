@@ -4,8 +4,7 @@ import Test.QuickCheck
 import Types
 import Lib
 import Data.Char
---import Test (run_nextRotorsTurns)
---import GHC.RTS.Flags (GCFlags(ringBell))
+
 
 
 runNextRotorsTurns = foldr (\f acc -> f acc) makeRotors2' (replicate 100 nextRotorsTurns) 
@@ -25,11 +24,11 @@ prop_passRotor r = do
                      let result = passRotor a r 
                      return $ passRotor result r{rotorWiring = inverseRotorWiring $ rotorWiring r} == a
 
-prop_pRotorI :: Int -> Gen Bool
-prop_pRotorI stps = do
-                     a <- choose (0, 25) :: Gen Int 
-                     let result = passRotor a rotorI 
-                     return $ passRotor result invRotorI == a
+prop_passRotorI :: Int -> Gen Bool
+prop_passRotorI stps = do
+                         a <- choose (0, 25) :: Gen Int 
+                         let result = passRotor a rotorI 
+                         return $ passRotor result invRotorI == a
 
 
 
@@ -41,8 +40,8 @@ prop_IdRotor stps = do
                         return $ result == a
 
 
-prop_Reflector :: Int -> Gen Bool
-prop_Reflector stps = do
+prop_ReflectorB :: Int -> Gen Bool
+prop_ReflectorB stps = do
                         a <- choose (0, 25) :: Gen Int
                         let result = passRotor a reflectorB
                         return $ a == passRotor result reflectorB
@@ -56,6 +55,20 @@ prop_PressKey stps = do
                             result' = head output'
                         return $ a == result' && stps + 1 == stps' && stps + 1 == stps''                  
 
+
+prop_makePlugboard :: Gen Bool
+prop_makePlugboard = do
+                        pc <- shuffle [0..25]
+                        let (h, t) = splitAt 13 pc 
+                            result = makePlugboard rotorIdWiring (h, t)
+                        return $ result == inverseRotorWiring result 
+
+prop_inverseRotorWiring :: Gen Bool
+prop_inverseRotorWiring = do
+                            pc <- shuffle [0..25]
+                            let result = inverseRotorWiring pc
+                                result' = inverseRotorWiring result 
+                            return $ pc == result' 
 
 
 {-

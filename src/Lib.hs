@@ -68,5 +68,14 @@ nextStep l stps [p0,r0,r1,r2,rf,ir2,ir1,ir0,p1] =
                                   in (pressKey l (stps + 1, [] , rs), rs) 
 nextStep _ _ _ = error "Impossibru!"
 
+configPlugboard :: RotorWiring -> ([Int], [Int]) -> RotorWiring 
+configPlugboard rw ([], _) = rw
+configPlugboard rw (_, []) = rw
+configPlugboard rw (s1:ss1, s2:ss2) = let (h, t) = splitAt s1 rw
+                                          rw' = h ++ [s2] ++ tail t
+                                          (h', t') = splitAt s2 rw'
+                                          rw'' = h' ++ [s1] ++ tail t'
+                                    in configPlugboard rw'' (ss1, ss2)
+                                           
 
 

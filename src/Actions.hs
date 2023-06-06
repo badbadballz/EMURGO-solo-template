@@ -4,6 +4,9 @@ import Lib
 import Types
 import Data.Char
 import System.IO
+import System.Console.ANSI
+
+--import Sandbox (PlugBoard, RotorWiring)
 
 operate :: Steps -> Rotors -> IO ()
 operate stps rs = do            
@@ -20,6 +23,50 @@ operate stps rs = do
                     else 
                         operate stps rs
 
+setReflector :: IO Reflector
+setReflector = do
+                putStrLn ""
+                putStrLn "Choose reflector (B or C)"
+                c <- getChar
+                go (toUpper c) 
+                where 
+                    go 'B' = return $ makeReflector reflectorBWiring
+                    go 'C' = return $ makeReflector reflectorCWiring
+                    go _ = setReflector
+
+setPlugboard :: (String, String) -> IO Plugboard
+setPlugboard p@(p1, p2) = do
+                           putStrLn ""
+                           putStrLn ("Enter plugboard letter combination (eg. AB), QQ to finish - " ++ show (zip p1 p2 ))
+                           s <- getLine
+                           if length s == 2 then go (map toUpper s)
+                           else setPlugboard p
+                           where 
+                            go "QQ" = do
+                                        let p = configPlugboard rotorIdWiring (map charToInt p1, map charToInt p2)
+                                        return $ makePlugboard p
+                            go [c1,c2] = if isValidChar c1 && isValidChar c2 &&
+                                                     notElem c1 p1 && notElem c1 p2 &&
+                                                     notElem c2 p1 && notElem c2 p2 && c1 /= c2 then
+                                                     setPlugboard (toUpper c1:p1, toUpper c2:p2)
+                                                     else setPlugboard p
+                            go _ = setPlugboard p
+
+
+
+{-                        
+-- assumes n = rotorNumber
+setRotors' :: Int -> IO [(Rotor, Rotor)]
+setRotors' n = do
+                putStrLn ""
+                putStrLn "Choose rotor type (1-5) with 3 digit number"
+                putStrLn "ie. 123 means rotor 1, 2, then 3 in the rightmost to leftmost postions -"
+                s <- getLine
+                if length s == rotorNumber && and $ map isDigit s
+                then do
+                      let n = convertNumber n 
+-}
+
 -- assumes n = rotorNumber
 setRotors :: Int -> IO [(Rotor, Rotor)]
 setRotors 0 = return []
@@ -31,8 +78,10 @@ setRotors n = do
 setMachine :: IO Rotors
 setMachine = do
               trss <- setRotors rotorNumber
+              reflector <- setReflector
+              plugboard <- setPlugboard ("","")
               let (r , ir) = unzip trss 
-              return ([plugboard] ++ reverse r ++ [reflectorB] ++ ir ++ [plugboard]) 
+              return ([plugboard] ++ reverse r ++ [reflector] ++ ir ++ [plugboard]) 
               -- later implemenation can include programmable plugboard / reflector
 
 -- i is the position of the rotor to be chosen
