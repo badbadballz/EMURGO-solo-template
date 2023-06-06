@@ -1,7 +1,9 @@
 # Enigma M3 simulator
 
 This is an implementation of the Enigma cypher machine model M3. 
-There are 5 different rotor types, 2 reflectors (B or C) and a plugboard
+There are 5 different rotor types (I, II, III, IV, V), 2 reflectors (B or C) and a plugboard.
+For an online [Enigma] (https://people.physik.hu-berlin.de/~palloks/js/enigma/enigma-u_v261_en.htmlsimulato) (make sure M3 model is selected) 
+For more background [information] (https://en.wikipedia.org/wiki/Enigma_rotor_details) about the rotor details.
 
 ## How to use
 Select the rotor type (out of five possible choices) with the leftmost rotor (number 3) being 
