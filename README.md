@@ -1,10 +1,10 @@
 # Enigma M3 simulator
 
-This is an implementation of the Enigma cypher machine model M3 
+This is an implementation of the Enigma cypher machine model M3. 
 There are 5 different rotor types, 2 reflectors (B or C) and a plugboard
 
 ## How to use
-Select the rotor type (out of five possible choices) with the rightmost rotor (number 3) being 
+Select the rotor type (out of five possible choices) with the leftmost rotor (number 3) being 
 selected first, and so on.
 Each rotor will have a starting position and ring setting.
 The plugboard switches pairs of letter around, so A - B will turn an A input into a B and vice versa.
