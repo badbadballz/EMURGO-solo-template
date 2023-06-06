@@ -5,23 +5,41 @@ import Types
 import Data.Char
 import System.IO
 import System.Console.ANSI
-
+import Data.List (intersperse, foldl')
 --import Sandbox (PlugBoard, RotorWiring)
 
-operate :: Steps -> Rotors -> IO ()
-operate stps rs = do            
+printMachine :: Steps -> Tinput -> Toutput -> Eoutput -> Rotors -> IO () 
+printMachine stps input output eoutput rs = do
+                                             clearScreen
+                                             putStr ("Steps - " ++ show stps) 
+                                             cursorForward 5
+                                             putStrLn $ intersperse '-' $ map intToChar $ foldl' (\acc r -> turns r : acc) [] rs
+                                             cursorDownLine 1
+                                             putStrLn $ reverse input
+                                             cursorDownLine 1
+                                             putStrLn $ intersperse '>' $ reverse eoutput
+                                             cursorDownLine 1
+                                             putStrLn $ reverse output
+
+
+operate :: Steps -> Tinput -> Toutput -> Rotors -> IO ()
+operate stps input output rs = do            
                     putStrLn ""
                     c <- getChar
                     putStrLn ""
                     if isValidChar c
                     then do 
                             let c' = (charToInt . toUpper) c
-                                ((stps', output, _), rs') = nextStep c' stps rs
-                                alphas = map intToChar output
-                            putStrLn (show stps' ++ " " ++ [head alphas] ++ " " ++ tail alphas)    
-                            operate stps' rs'
+                                ((stps', eoutput, _), rs') = nextStep c' stps rs
+                                alphas = map intToChar eoutput
+                                input' = intToChar c' : input 
+                                output' = head alphas : output
+                                [_,r2,r1,r0,_,_,_,_,_] = rs'
+                            --putStrLn (show stps' ++ " " ++ [head alphas] ++ " " ++ tail alphas) 
+                            printMachine stps' input' output' alphas [r2,r1,r0]
+                            operate stps' input' output' rs'
                     else 
-                        operate stps rs
+                        operate stps input output rs
 
 setReflector :: IO Reflector
 setReflector = do

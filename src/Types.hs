@@ -29,6 +29,10 @@ type Letter = Int
 type Outputs = [Letter]
 type MachineState = (Steps, Outputs, Rotors)
 
+type Tinput = String
+type Toutput = String
+type Eoutput = String
+
 upperAlphaOffset = 65
 
 rotorNumber :: Int 

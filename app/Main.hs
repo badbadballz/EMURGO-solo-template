@@ -5,6 +5,7 @@ import Lib
 import Types
 --import Control.Monad.State
 import System.IO
+import System.Console.ANSI (clearScreen)
 
 -- testing for rotors
 main :: IO ()
@@ -12,7 +13,9 @@ main = do
         hSetBuffering stdout NoBuffering
         hSetBuffering stdin  NoBuffering
         rs <- setMachine
-        operate 0 rs
+        let [_,r2,r1,r0,_,_,_,_,_] = rs
+        printMachine 0 [] [] [] [r2,r1,r0]
+        operate 0 [] [] rs
        
 
 {-}

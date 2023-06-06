@@ -56,11 +56,11 @@ prop_PressKey stps = do
                         return $ a == result' && stps + 1 == stps' && stps + 1 == stps''                  
 
 
-prop_makePlugboard :: Gen Bool
-prop_makePlugboard = do
+prop_configPlugboard :: Gen Bool
+prop_configPlugboard = do
                         pc <- shuffle [0..25]
                         let (h, t) = splitAt 13 pc 
-                            result = makePlugboard rotorIdWiring (h, t)
+                            result = configPlugboard rotorIdWiring (h, t)
                         return $ result == inverseRotorWiring result 
 
 prop_inverseRotorWiring :: Gen Bool
@@ -153,43 +153,45 @@ makeRotors' :: Rotors
 makeRotors' = [rotorI, reflectorB, invRotorI] 
 
 makeRotors1' :: Rotors
-makeRotors1' = [plugboard, rotorI, rotorII, rotorIII, reflectorB, invRotorIII, invRotorII, invRotorI, plugboard]
+makeRotors1' = [testPlugboard, rotorI, rotorII, rotorIII, reflectorB, invRotorIII, invRotorII, invRotorI, testPlugboard]
 
 makeRotors2' :: Rotors
-makeRotors2' = [plugboard, rotorI, rotorII, rotorIII, reflectorB]
+makeRotors2' = [testPlugboard, rotorI, rotorII, rotorIII, reflectorB]
 
 makeRotors3' :: Rotors
-makeRotors3' = [plugboard, rotorIV, rotorV, rotorI, reflectorB]
+makeRotors3' = [testPlugboard, rotorIV, rotorV, rotorI, reflectorB]
 
 makeRotors4' :: Rotors
-makeRotors4' = [plugboard, testRotorI, testRotorII, testRotorIII, reflectorB, testInvRotorIII, testInvRotorII, testInvRotorI, plugboard]
+makeRotors4' = [testPlugboard, testRotorI, testRotorII, testRotorIII, reflectorB, testInvRotorIII, testInvRotorII, testInvRotorI, testPlugboard]
 
 makeRotors5' :: Rotors
-makeRotors5' = [plugboard, testRotorIV, testRotorV, testRotorIII, reflectorB, testInvRotorIII, testInvRotorV, testInvRotorIV, plugboard]
+makeRotors5' = [testPlugboard, testRotorIV, testRotorV, testRotorIII, reflectorB, testInvRotorIII, testInvRotorV, testInvRotorIV, testPlugboard]
 
+makeRotors6' :: Rotors
+makeRotors6' = [rotorIII, rotorII, rotorI]
 
--- startpos 'K', ring setting 4
+-- startpos 'K', ring setting 4, reflector B, null plugboard
 testRotorI :: Rotor
 testRotorI = Rotor 0 10 3 10 r1Turnover (setRing 3 rotorIWiring)  
 
 testInvRotorI :: Rotor
 testInvRotorI = Rotor 0 10 3 10 r1Turnover (setRing 3 invRotorIWiring)
 
--- startpos 'D', ring setting 8
+-- startpos 'D', ring setting 8, reflector B, null plugboard
 testRotorII :: Rotor
 testRotorII = Rotor 1 3 7 3 r2Turnover (setRing 7 rotorIIWiring)  
 
 testInvRotorII :: Rotor
 testInvRotorII = Rotor 1 3 7 3 r2Turnover (setRing 7 invRotorIIWiring)
 
--- startpos 'X', ring setting 26
+-- startpos 'X', ring setting 26, reflector B, null plugboard
 testRotorIII :: Rotor
 testRotorIII = Rotor 2 23 25 23 r3Turnover (setRing 25 rotorIIIWiring)  
 
 testInvRotorIII :: Rotor
 testInvRotorIII = Rotor 2 23 25 23 r3Turnover (setRing 25 invRotorIIIWiring)
 
--- pos 0, startpos 'I', ringsetting 11
+-- pos 0, startpos 'I', ringsetting 11, reflector B, null plugboard
 testRotorIV :: Rotor
 testRotorIV = makeRotor 4 0 8 10
 
@@ -203,7 +205,8 @@ testRotorV = makeRotor 5 1 17 2
 testInvRotorV :: Rotor
 testInvRotorV = makeInvRotor 5 1 17 2
 
-
+testPlugboard :: Plugboard
+testPlugboard = makePlugboard rotorIdWiring
 
 -- rotor type, rotorpos, startpos, ringsetting
 makeRotor :: Int -> Int -> Int -> Int -> Rotor
@@ -223,3 +226,11 @@ makeInvRotor n rp sp rs
     | n == 4 = Rotor rp sp rs sp r4Turnover (setRing rs invRotorIVWiring)
     | n == 5 = Rotor rp sp rs sp r5Turnover (setRing rs invRotorVWiring)
     | otherwise = error "Impossibru!"
+
+
+    -- C, V , II, IV
+    --    v    x   e
+    --    10   23  15
+
+testText = "DuringthefirstpartofyourlifeyouonlybecomeawareofhappinessonceyouhavelostitThenanagecomesasecondoneinwhichyoualreadyknowatthemomentwhenyoubegintoexperiencetruehappinessthatyouareattheendofthedaygoingtoloseitWhenImetBelleIunderstoodthatIhadjustenteredthissecondageIalsounderstoodthatIhadntreachedthethirdageinwhichanticipationofthelossofhappinesspreventsyoufromliving"
+cyphertestText = filter (not . isSpace) "yttww xsoqt emgpt gkzbl lmdyb otclk llkkb hqlbn zpaxm ulvwq ywfvu utwgz hunlo ndrsc hfkgb yxtxz oplak fzbpv clfrm lqwze vqajr hpxwb ayofi uwwgm alwgc rfrfb mcqrm lfstz ztdjr adypf fszzu yonqd enfto ewroc iaxcj jacqw bdxef jnxua hophz lufii ykwjc omkvz jgfyv yyxow vwxxw fbrtz kinwn xjivb wqcfd xtcum boffd qaqur jmovf bhtvn ayqxy fregi fjsux hvoxj xuonh lzatq nbypo xiemb tnlsf gpfxf yolxk ugewj ynowo kwoec covpt tzajx ukaaj edfdq aoabo"
