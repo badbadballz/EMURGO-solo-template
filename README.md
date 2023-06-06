@@ -1,3 +1,16 @@
+# Enigma M3 simulator
+
+This is an implementation of the Enigma cypher machine model M3 
+There are 5 different rotor types, 2 reflectors (B or C) and a plugboard
+
+## How to use
+Select the rotor type (out of five possible choices) with the rightmost rotor (number 3) being 
+selected first, and so on.
+Each rotor will have a starting position and ring setting.
+The plugboard switches pairs of letter around, so A - B will turn an A input into a B and vice versa.
+
+## How to test?
+
 # EMURGO Academy Haskell Course: Solo Project
 
 This repository contains a preconfigured Haskell development environment, allowing you to start coding in Haskell with zero installation using [Gitpod](https://www.gitpod.io/) and a browser-based version of VS Code.
@@ -28,3 +41,4 @@ Use `cabal repl` in the terminal and the `:l` command followed by a specific mod
 Use `cabal run` to run your completed program.
 
 As you complete the assignments, stage, commit and push your changes to Github using the `Source Control` tab in the left panel.
+
