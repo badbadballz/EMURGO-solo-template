@@ -29,6 +29,7 @@ executable emurgo-project
        ,mtl >= 2.3
        ,QuickCheck
        ,ansi-terminal
+       ,transformers
 
     hs-source-dirs:   app, src
     default-language: Haskell2010

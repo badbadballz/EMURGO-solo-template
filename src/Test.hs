@@ -208,24 +208,7 @@ testInvRotorV = makeInvRotor 5 1 17 2
 testPlugboard :: Plugboard
 testPlugboard = makePlugboard rotorIdWiring
 
--- rotor type, rotorpos, startpos, ringsetting
-makeRotor :: Int -> Int -> Int -> Int -> Rotor
-makeRotor n rp sp rs 
-    | n == 1 = Rotor rp sp rs sp r1Turnover (setRing rs rotorIWiring)
-    | n == 2 = Rotor rp sp rs sp r2Turnover (setRing rs rotorIIWiring)
-    | n == 3 = Rotor rp sp rs sp r3Turnover (setRing rs rotorIIIWiring)
-    | n == 4 = Rotor rp sp rs sp r4Turnover (setRing rs rotorIVWiring)
-    | n == 5 = Rotor rp sp rs sp r5Turnover (setRing rs rotorVWiring)
-    | otherwise = error "Impossibru!"
 
-makeInvRotor :: Int -> Int -> Int -> Int -> Rotor
-makeInvRotor n rp sp rs 
-    | n == 1 = Rotor rp sp rs sp r1Turnover (setRing rs invRotorIWiring)
-    | n == 2 = Rotor rp sp rs sp r2Turnover (setRing rs invRotorIIWiring)
-    | n == 3 = Rotor rp sp rs sp r3Turnover (setRing rs invRotorIIIWiring)
-    | n == 4 = Rotor rp sp rs sp r4Turnover (setRing rs invRotorIVWiring)
-    | n == 5 = Rotor rp sp rs sp r5Turnover (setRing rs invRotorVWiring)
-    | otherwise = error "Impossibru!"
 
 
     -- C, V , II, IV
