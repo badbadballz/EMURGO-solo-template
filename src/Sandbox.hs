@@ -12,6 +12,9 @@ import Control.Monad.Trans
 --import Data.Colour.SRGB 
 import System.Console.ANSI
 import System.IO
+import qualified Data.ByteString.Char8 as B
+import qualified Data.Text as T
+import qualified Data.Text.IO as TO
 
 --import Types (rotorIdWiring)
 
@@ -51,6 +54,13 @@ type MachineState = (Steps, Rotors)
 type PlugBoard = [Int]
 
 type Reflector = [Int]
+
+test_byteString :: IO ()
+test_byteString = do 
+                   s <- getLine
+                   let t = T.pack s 
+                   TO.putStrLn t 
+
 
 test_getChar :: IO ()
 test_getChar = do

@@ -31,6 +31,8 @@ executable emurgo-project
        ,ansi-terminal
        ,transformers
        ,containers
+       ,bytestring
+       ,text
 
     hs-source-dirs:   app, src
     default-language: Haskell2010

@@ -4,7 +4,8 @@ import Test.QuickCheck
 import Types
 import Lib
 import Data.Char
-
+import System.Console.ANSI
+import Data.List (intersperse, foldl')
 
 
 runNextRotorsTurns = foldr (\f acc -> f acc) makeRotors2' (replicate 100 nextRotorsTurns) 
@@ -85,6 +86,32 @@ test_NextStep :: [(Steps, Letter)] -> Rotors -> String
 test_NextStep [] _ = []
 test_NextStep ((stps, l) : sls) rs = let ((_, output, _), rs') = nextStep l stps rs 
                                      in intToChar (head output) : test_NextStep sls rs'
+
+test_printMachine :: Steps -> Tinput -> Toutput -> Eoutput -> Rotors -> IO (Tinput, Toutput) 
+test_printMachine stps input output eoutput rs = do
+                                             clearScreen
+                                             putStr "Steps - " 
+                                             putStr $ show stps 
+                                             cursorForward 5
+                                             setSGR [SetColor Foreground Vivid Green]
+                                             putStr "Rotors - " 
+                                             putStrLn (intersperse '-' $ map intToChar $ foldl' (\acc r -> turns r : acc) [] rs)
+                                             setSGR [Reset]
+                                             {-
+                                             cursorDownLine 1
+                                             putStr "Input  - " 
+                                             TO.putStrLn input
+                                             cursorDownLine 1
+                                             putStrLn $ intersperse '>' $ reverse eoutput
+                                             cursorDownLine 1
+                                             setSGR [SetColor Foreground Vivid Yellow]
+                                             putStr "Output - " 
+                                             TO.putStrLn output
+                                             setSGR [Reset]
+                                             -}
+                                             return (input, output)
+
+
 -- for makeRotors1'
 aOneThousand = zip [0 :: Steps ..] $ map (charToInt . toUpper) $ filter (not . isSpace) "ftzmg isxip jwgdn jjcoq tyrig dmxfi esrwz gtoiu iekkd cshtp yoepv xnhvr wwesf ruxdg wozdm nkizw nczdu coblt uyhdz govbu ypkoj wbows eemtz fwygk odtbz dqrcz cifdi dxcqz ookvi iomll egmso jxhnf hbofd zctzq powvo mqnwq quozu fmsdx mjxiy zkozd ewged jxsmy hkjkr iqxwb itwly usthz qmgtx xwihd obtkc gzuve kyeky rewly wfmhl qjqjw cvtks nhzeg wzkve xktdz xlchr yjqqd zhyyp zoryg fkkkg ufdcu tkrjq gzwjd lmtyy igdox oigqd wqgou yupew dwcin gpdob rkxtj lkqjs rbimx vgzme bfzkl owxuk tdfnf nyyyo wzyjw origo khhln gbpuy xfdcq lpxsc hhslj lsyfs lcmmb knglv kwvqv djgoi quuhq xokdp icpey cmhko kedzd tjvsy ekpow mcrzg rvfwg fekew tpmzt vbxmk iihhh myxjn jvjil lvqbx eqyho mtnzr fdbst ekfir qhyoi zdmbt sverb nhjpi joufl jtnul rzzcb wswex nrhfg kjlud pxzji qtlnz fkylr ugebh ruksy gqkpr clkyq bpbhd vlosr zfbru ngqyd wsley mypsn rwmhy rglvr uptfu pucne omqhb ecbnj xvzfs qmzbu sefxw fcpli prqlk pmumk hvkbo xbkun ixhbh dvqgd pjgjc scemm ztfwj lbdsc porey pzgex jnmlv zmyzv brzui rgjtm fhgew erplp mjpxp gyyei editg mcqwq ndqjr dojpo bflyk iidwj lqllj zjddd tpsml xipkc mzyln pnzxn tdzto toruh hkgyu ftrnz cvrzx pxjuy qnksg hqcwd pksom hmlqv bwrmb ptcih jsled cvjrv bxvne xexit htexx xlxkk ckkht lxwey hjuxv dowlb"
 -- for makeRotors1'
@@ -179,3 +206,5 @@ cyphertestText = filter (not . isSpace) "yttww xsoqt emgpt gkzbl lmdyb otclk llk
 -}
 
 testText2 = "YouronlychanceofsurvivalifyouaresincerelysmittenliesinhidingthisfactfromthewomanyouloveoffeigningacasualdetachmentunderallcircumstancesWhatsadnessthereisinthissimpleobservationWhatanaccusationagainstmanHoweverithadneveroccurredtometocontestthislawnortoimaginedisobeyingitlovemakesyouweakandtheweakerofthetwoisoppressedtorturedandfinallykilledbytheotherwhoinhisorherturnoppressestorturesandkillswithouthavingevilintentionswithoutevengettingpleasurefromitwithcompleteindifferencethatswhatmennormallycalllove"
+
+

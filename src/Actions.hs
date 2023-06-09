@@ -10,29 +10,36 @@ import Control.Monad.Trans
 import Control.Monad.Trans.Maybe
 import qualified Data.Sequence as Seq
 import Data.Foldable (toList)
+import qualified Data.Text as T
+import qualified Data.Text.IO as TO
+import Test
 
 printMachine :: Steps -> Tinput -> Toutput -> Eoutput -> Rotors -> IO (Tinput, Toutput) 
 printMachine stps input output eoutput rs = do
                                              clearScreen
-                                             putStr ("Steps - " ++ show stps) 
+                                             putStr "Steps - " 
+                                             putStr $ show stps 
                                              cursorForward 5
                                              setSGR [SetColor Foreground Vivid Green]
-                                             putStrLn $ "Rotors - " ++ (intersperse '-' $ map intToChar $ foldl' (\acc r -> turns r : acc) [] rs)
+                                             putStr "Rotors - " 
+                                             putStrLn (intersperse '-' $ map intToChar $ foldl' (\acc r -> turns r : acc) [] rs)
                                              setSGR [Reset]
                                              cursorDownLine 1
-                                             putStrLn $ "Input  - " ++ toList input
+                                             putStr "Input  - " 
+                                             TO.putStrLn input
                                              cursorDownLine 1
                                              putStrLn $ intersperse '>' $ reverse eoutput
                                              cursorDownLine 1
-                                             setSGR [SetColor Foreground Vivid Blue]
-                                             putStrLn $ "Output - " ++ toList output
+                                             setSGR [SetColor Foreground Vivid Yellow]
+                                             putStr "Output - " 
+                                             TO.putStrLn output
                                              setSGR [Reset]
                                              return (spaceText input, spaceText output)
 
 
-spaceText :: Seq.Seq Char -> Seq.Seq Char
+spaceText :: T.Text -> T.Text
 spaceText s 
-    | length (Seq.filter (not.isSpace) s) `mod` 5 == 0 = s Seq.|> ' '
+    | T.length (T.filter (not.isSpace) s) `mod` 5 == 0 = T.snoc s ' '
     | otherwise = s
 
 operate :: Steps -> Tinput -> Toutput -> Rotors -> IO ()
@@ -45,8 +52,8 @@ operate stps input output rs = do
                             let c' = (charToInt . toUpper) c
                                 ((stps', eoutput, _), rs') = nextStep c' stps rs
                                 alphas = map intToChar eoutput
-                                input' = input Seq.|> intToChar c'  
-                                output' = output Seq.|> head alphas
+                                input' = T.snoc input (intToChar c')   --input Seq.|> intToChar c'  
+                                output' = T.snoc output (head alphas)  --output Seq.|> head alphas
                                 [_,r2,r1,r0,_,_,_,_,_] = rs'
                             (input'', output'') <- printMachine stps' input' output' alphas [r2,r1,r0]
                             operate stps' input'' output'' rs'

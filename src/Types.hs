@@ -4,6 +4,8 @@ module Types where
 import Data.Char
 import Test.QuickCheck 
 import qualified Data.Sequence as Seq
+import qualified Data.Text as T
+import qualified Data.Text.IO as TO
 
 data Rotor = Rotor { rotorPos :: Int
                    , startPos :: Int
@@ -23,8 +25,8 @@ type Letter = Int
 type Outputs = [Letter]
 type MachineState = (Steps, Outputs, Rotors)
 
-type Tinput = Seq.Seq Char
-type Toutput = Seq.Seq Char
+type Tinput = T.Text --Seq.Seq Char
+type Toutput = T.Text --Seq.Seq Char
 type Eoutput = String
 
 upperAlphaOffset = 65

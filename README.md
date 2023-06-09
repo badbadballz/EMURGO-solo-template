@@ -22,6 +22,14 @@ Type the letter you want to encrypt or decrypt. Rotors - shows the current rotor
 Used QuickCheck to test properties of critical functions like passRotor, which performs the actual transformation of the letter to its corresponding encrypted letter.
 Used the online Enigma machine to encrypt inputs and check if this implementation can decrypt them.
 
+## Improvements?
+
+* Better machine setup interface, it is a little annoying at the moment
+* A quicker printout of the machine infomation, at the moment it is inefficent 
+* Using better data structures, better alogithms to optimise the code
+* More information displayed like machine settings
+
+
 # EMURGO Academy Haskell Course: Solo Project
 
 This repository contains a preconfigured Haskell development environment, allowing you to start coding in Haskell with zero installation using [Gitpod](https://www.gitpod.io/) and a browser-based version of VS Code.
