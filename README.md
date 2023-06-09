@@ -1,17 +1,26 @@
 # Enigma M3 simulator
 
 This is an implementation of the Enigma cypher machine model M3. 
-There are 5 different rotor types (I, II, III, IV, V), 2 reflectors (B or C) and a plugboard.
-For an online [Enigma](https://people.physik.hu-berlin.de/~palloks/js/enigma/enigma-u_v261_en.htmlsimulato) (make sure M3 model is selected).
-For more background [information](https://en.wikipedia.org/wiki/Enigma_rotor_details) about the rotor details.
+There are 5 different rotor types (I, II, III, IV, V), 2 reflectors (B or C) and a plugboard simulated.
+The Enigma is a symmetrical cypher; entering cyphertext with the same key used to encrypt it will give the plaintext.
+The input first passes the plugboard, then through the rotors from right to left. The reflector 'reflects' the input and it passes through the rotors from left to right, and lastly out through the plugboard again to give the encrypted/decrypted output.
+Here is an online [Enigma](https://people.physik.hu-berlin.de/~palloks/js/enigma/enigma-u_v261_en.html) machine for comparison (make sure the M3 model is selected).
 
 ## How to use
-Select the rotor type (out of five possible choices) with the leftmost rotor (number 3) being 
-selected first, and so on.
-Each rotor will have a starting position and ring setting.
-The plugboard switches pairs of letter around, so A - B will turn an A input into a B and vice versa.
+The machine has to be setup first before encryption. 
+First, select the rotor type (out of five possible choices) - For example entering 543 means rotor V in the leftmost position, rotor IV in the middle, and rotor III in the rightmost position.
+Then, select the starting position for each rotor. This is commonly called the message key.
+Using our selection above, entering ABC would mean rotor V will start at A, IV at B and III at C.
+The ring selection for each rotor is next. There are 26 positions for each rotor, 1 from 26.
+Entering 1 6 25 means for rotor V (the leftmost rotor) the ring setting is 1, for IV is 6, and for III is 25.
+There are 2 choices of reflectors, B or C.
+Lastly are the plugboard pair(s) selection. Each pair, for example A-B, means when A is entered it becomes a B, and vice versa. Enter each unique plugboard pairs as AB, SE, etc. Type QQ to finish.
+Type the letter you want to encrypt or decrypt. Rotors - shows the current rotor setting as the machine steps. 
 
 ## How to test?
+
+Used QuickCheck to test properties of critical functions like passRotor, which performs the actual transformation of the letter to its corresponding encrypted letter.
+Used the online Enigma machine to encrypt inputs and check if this implementation can decrypt them.
 
 # EMURGO Academy Haskell Course: Solo Project
 
