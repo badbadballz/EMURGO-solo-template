@@ -71,15 +71,6 @@ prop_inverseRotorWiring = do
                             return $ pc == result' 
 
 
-{-
-test_PressKey :: IO ()
-test_PressKey = go 0
-                where
-                    go stps = do
-                                c <- getChar
-                                let (result, _, _)
--}
-
 makeTestRotorId :: Int -> Rotor
 makeTestRotorId n = Rotor n 0 0 0 0 testRotorId 
 
@@ -89,43 +80,6 @@ testRotorId = map charToInt ['A'..'Z']
 invTestRotorId :: RotorWiring
 invTestRotorId = inverseRotorWiring testRotorId
 
-{-
-prop_CorrectDiffRToL :: Int -> Rotor -> Gen Bool
-prop_CorrectDiffRToL stps r@(Rotor n r' _) = do
-                                             a <- choose (0, 25) :: Gen Int 
-                                             let result = passRotorRToL a stps r
-                                                 rStps = (stps `div` rotorSize^n) `mod` rotorSize 
-                                                 diff = (r' !! (a + rStps) `mod` rotorSize) - (a + rStps) `mod` rotorSize
-                                             return $ (result - diff) `mod` rotorSize == (a + rStps) `mod` rotorSize 
-                                             
-
-
--- rotor stepping test every mod rotorSize
-{-
-prop_StepsToNthRSteps :: Int -> Gen Bool
-prop_StepsToNthRSteps stps = do
-                                let result = listStepsToNthRSteps stps 
-                                return $ result == 
--}
-
-listStepsToNthRSteps :: Steps -> [Int]
-listStepsToNthRSteps stps = let rs = [0..(rotorNumber - 1)]
-                          in [stepsToNthRSteps stps n | n <- rs]
-
-
-
-
-sum' :: Int -> Int -> Int 
-sum' n m = n + m
-
-prop_sum' n = do
-                x <- choose (1, 1) :: Gen Int
-                return $ sum' x n === x + n
-
-
--}
--- nextStep :: Letter -> Steps -> Rotors -> (MachineState, Rotors)
--- type MachineState = (Steps, Outputs, Rotors)
 
 test_NextStep :: [(Steps, Letter)] -> Rotors -> String
 test_NextStep [] _ = []
@@ -217,3 +171,11 @@ testPlugboard = makePlugboard rotorIdWiring
 
 testText = "DuringthefirstpartofyourlifeyouonlybecomeawareofhappinessonceyouhavelostitThenanagecomesasecondoneinwhichyoualreadyknowatthemomentwhenyoubegintoexperiencetruehappinessthatyouareattheendofthedaygoingtoloseitWhenImetBelleIunderstoodthatIhadjustenteredthissecondageIalsounderstoodthatIhadntreachedthethirdageinwhichanticipationofthelossofhappinesspreventsyoufromliving"
 cyphertestText = filter (not . isSpace) "yttww xsoqt emgpt gkzbl lmdyb otclk llkkb hqlbn zpaxm ulvwq ywfvu utwgz hunlo ndrsc hfkgb yxtxz oplak fzbpv clfrm lqwze vqajr hpxwb ayofi uwwgm alwgc rfrfb mcqrm lfstz ztdjr adypf fszzu yonqd enfto ewroc iaxcj jacqw bdxef jnxua hophz lufii ykwjc omkvz jgfyv yyxow vwxxw fbrtz kinwn xjivb wqcfd xtcum boffd qaqur jmovf bhtvn ayqxy fregi fjsux hvoxj xuonh lzatq nbypo xiemb tnlsf gpfxf yolxk ugewj ynowo kwoec covpt tzajx ukaaj edfdq aoabo"
+
+{- C, V, III, IV
+      X   E    B
+       2  20   18
+       AB GC RT SE 
+-}
+
+testText2 = "YouronlychanceofsurvivalifyouaresincerelysmittenliesinhidingthisfactfromthewomanyouloveoffeigningacasualdetachmentunderallcircumstancesWhatsadnessthereisinthissimpleobservationWhatanaccusationagainstmanHoweverithadneveroccurredtometocontestthislawnortoimaginedisobeyingitlovemakesyouweakandtheweakerofthetwoisoppressedtorturedandfinallykilledbytheotherwhoinhisorherturnoppressestorturesandkillswithouthavingevilintentionswithoutevengettingpleasurefromitwithcompleteindifferencethatswhatmennormallycalllove"

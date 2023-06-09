@@ -30,6 +30,7 @@ executable emurgo-project
        ,QuickCheck
        ,ansi-terminal
        ,transformers
+       ,containers
 
     hs-source-dirs:   app, src
     default-language: Haskell2010

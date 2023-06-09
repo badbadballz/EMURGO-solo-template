@@ -9,7 +9,10 @@ import Lib
 import qualified Types as T
 import Text.Read (readMaybe)
 import Control.Monad.Trans
-import Control.Monad.Trans.Maybe
+--import Data.Colour.SRGB 
+import System.Console.ANSI
+import System.IO
+
 --import Types (rotorIdWiring)
 
 --import Test.QuickCheck (shrinkNothing)
@@ -20,93 +23,6 @@ Old and testing functions, not used in main program
 -}
 
 -- representation of the rotor wiring in a rotor. The index represents the input, and the corresponding item number is the output index
-
-checkIsValidAlphas :: String -> Bool
-checkIsValidAlphas s = length s == rotorNumber && all isAlpha s 
-
-checkIsValidNumbers :: String -> Bool
-checkIsValidNumbers s = let wss = words s
-                            ok = length wss == rotorNumber && checkRingSetting wss
-                       in ok
-                        where 
-                          checkRingSetting [] = True
-                          checkRingSetting (w:ws) 
-                                | all isDigit w = let w' = read w :: Int
-                                                   in 1 <= w' && w' <= rotorSize && checkRingSetting ws                       
-                                | otherwise = False
-
-getRotorTypes :: MaybeT IO [Int]
-getRotorTypes = MaybeT $ do 
-                  liftIO $ putStrLn "Enter 3 rotor types from rightmost to leftmost (123 = Rotor I, II III)"
-                  liftIO $ putStrLn "Choose from 1 - 5"
-                  s <- liftIO getLine
-                  check s
-                  where
-                   checkRotorTypes = foldr (\x acc -> let x' = read [x] in 1 <= x' && x' <= T.rotorTypes && acc) True
-                   check s' 
-                    | length s' == rotorNumber && all isDigit s' = if checkRotorTypes s' 
-                                                        then return $ Just $ map (\n -> read [n] :: Int) s'
-                                                        else return Nothing
-                    | otherwise = return Nothing
-
-getStartPos :: MaybeT IO [Int]
-getStartPos = do
-                liftIO $ putStrLn "Enter the start position of each rotor correspondingly"
-                liftIO $ putStrLn "(ABC means rotor I has start position A, II has start position B"
-                liftIO $ putStrLn "and so on) Choose from A - Z"
-                s <- liftIO getLine
-                check s
-                where 
-                 check s' 
-                  | checkIsValidAlphas s' = MaybeT $ return $ Just (map (charToInt.toUpper) s')
-                  | otherwise = MaybeT $ return Nothing
-{-
-getStartPos :: String -> Maybe [Int]
-getStartPos s 
-        | checkIsValidAlphas s = Just (map (charToInt.toUpper) s)
-        | otherwise = Nothing
--}
-
-
-getRingPos :: MaybeT IO [Int]
-getRingPos = do  
-                liftIO $ putStrLn "Enter the ring setting of each rotor correspondingly"
-                liftIO $ putStrLn "(1 25 0 means rotor I has ring setting of 1, II has ring setting of 25"
-                liftIO $ putStrLn "and so on) Choose from 1 - 26"
-                s <- liftIO getLine
-                check s
-                where 
-                  check s'
-                   | checkIsValidNumbers s' = MaybeT $ return $ Just $ map (\x -> (read x - 1) ::  Int) $ words s'
-                   | otherwise = MaybeT $ return Nothing
-
-{-        
-getRingPos :: String -> Maybe [Int]
-getRingPos s  
-        | checkIsValidNumbers s = Just $ map (\x -> read x ::  Int) $ words s
-        | otherwise = Nothing                          
-
--}
-getRotorsInfo :: IO (Maybe ([Int], [Int], [Int]))
-getRotorsInfo = runMaybeT $ do 
-                                 rt <- getRotorTypes
-                                 sp <- getStartPos
-                                 rs <- getRingPos
-                                 return (rt, sp, rs)
-setRotors :: IO (T.Rotors, T.Rotors)
-setRotors = do
-                rsInfo <- getRotorsInfo
-                let n = rotorNumber - 1
-                case rsInfo of Just info -> return $ (reverse $ makeRotors n info, makeInvRotors n info)
-                               Nothing -> setRotors
-
-makeRotors _ ([], [], []) = []
-makeRotors n ((rt:rts), (sp:sps), (rs:rss)) = T.makeRotor rt n sp rs : makeRotors (n - 1) (rts, sps, rss) 
-makeRotors _ _ = error "Impossibru!"
-                 
-makeInvRotors _ ([], [], []) = []
-makeInvRotors n ((rt:rts), (sp:sps), (rs:rss)) = T.makeInvRotor rt n sp rs : makeInvRotors (n - 1) (rts, sps, rss) 
-makeInvRotors _ _ = error "Impossibru!"
 
 data RotorType = Rotor | Reflector | Plugboard
 
@@ -136,6 +52,26 @@ type PlugBoard = [Int]
 
 type Reflector = [Int]
 
+test_getChar :: IO ()
+test_getChar = do
+                hSetBuffering stdout NoBuffering
+                hSetBuffering stdin  NoBuffering
+                c <- getLine
+                setSGR [SetColor Foreground Vivid Blue]
+                cursorDown 100
+                putStr c
+                test_getChar
+
+test_ansi :: IO ()
+test_ansi = do 
+                setSGR [SetColor Foreground Vivid Green]
+                putStr "Enter your name: "
+                setSGR [SetColor Foreground Dull Yellow]
+                hFlush stdout  -- flush the output buffer before getLine
+                name <- getLine
+                setSGR [SetColor Foreground Dull Blue]
+                putStrLn $ "Hello, " ++ name ++ "!"
+                setSGR [Reset]  -- reset to default colour scheme
 
 isValidInput :: Char -> Maybe Char
 isValidInput c = if isAlpha c then Just (toUpper c)

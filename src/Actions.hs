@@ -8,22 +8,32 @@ import System.Console.ANSI
 import Data.List (intersperse, foldl')
 import Control.Monad.Trans
 import Control.Monad.Trans.Maybe
+import qualified Data.Sequence as Seq
+import Data.Foldable (toList)
 
---import Sandbox (PlugBoard, RotorWiring)
-
-printMachine :: Steps -> Tinput -> Toutput -> Eoutput -> Rotors -> IO () 
+printMachine :: Steps -> Tinput -> Toutput -> Eoutput -> Rotors -> IO (Tinput, Toutput) 
 printMachine stps input output eoutput rs = do
                                              clearScreen
                                              putStr ("Steps - " ++ show stps) 
                                              cursorForward 5
-                                             putStrLn $ intersperse '-' $ map intToChar $ foldl' (\acc r -> turns r : acc) [] rs
+                                             setSGR [SetColor Foreground Vivid Green]
+                                             putStrLn $ "Rotors - " ++ (intersperse '-' $ map intToChar $ foldl' (\acc r -> turns r : acc) [] rs)
+                                             setSGR [Reset]
                                              cursorDownLine 1
-                                             putStrLn $ reverse input
+                                             putStrLn $ "Input  - " ++ toList input
                                              cursorDownLine 1
                                              putStrLn $ intersperse '>' $ reverse eoutput
                                              cursorDownLine 1
-                                             putStrLn $ reverse output
+                                             setSGR [SetColor Foreground Vivid Blue]
+                                             putStrLn $ "Output - " ++ toList output
+                                             setSGR [Reset]
+                                             return (spaceText input, spaceText output)
 
+
+spaceText :: Seq.Seq Char -> Seq.Seq Char
+spaceText s 
+    | length (Seq.filter (not.isSpace) s) `mod` 5 == 0 = s Seq.|> ' '
+    | otherwise = s
 
 operate :: Steps -> Tinput -> Toutput -> Rotors -> IO ()
 operate stps input output rs = do            
@@ -35,12 +45,11 @@ operate stps input output rs = do
                             let c' = (charToInt . toUpper) c
                                 ((stps', eoutput, _), rs') = nextStep c' stps rs
                                 alphas = map intToChar eoutput
-                                input' = intToChar c' : input 
-                                output' = head alphas : output
+                                input' = input Seq.|> intToChar c'  
+                                output' = output Seq.|> head alphas
                                 [_,r2,r1,r0,_,_,_,_,_] = rs'
-                            --putStrLn (show stps' ++ " " ++ [head alphas] ++ " " ++ tail alphas) 
-                            printMachine stps' input' output' alphas [r2,r1,r0]
-                            operate stps' input' output' rs'
+                            (input'', output'') <- printMachine stps' input' output' alphas [r2,r1,r0]
+                            operate stps' input'' output'' rs'
                     else 
                         operate stps input output rs
 
@@ -62,7 +71,7 @@ setReflector = do
 
 setPlugboard :: (String, String) -> IO Plugboard
 setPlugboard p@(p1, p2) = do
-                           putStrLn ("Enter plugboard letter combination (eg. AB), QQ to finish - " ++ show (zip p1 p2 ))
+                           putStrLn ("Enter plugboard letter pair(s) (AB for A-B pair, SE for S-E pair etc.), type QQ to finish - " ++ show (zip p1 p2 ))
                            s <- getLine
                            if length s == 2 then go (map toUpper s)
                            else do 
@@ -83,21 +92,6 @@ setPlugboard p@(p1, p2) = do
                                     putStrLn "Invalid input!"
                                     setPlugboard p
 
-
-
-{-                        
--- assumes n = rotorNumber
-setRotors' :: Int -> IO [(Rotor, Rotor)]
-setRotors' n = do
-                putStrLn ""
-                putStrLn "Choose rotor type (1-5) with 3 digit number"
-                putStrLn "ie. 123 means rotor 1, 2, then 3 in the rightmost to leftmost postions -"
-                s <- getLine
-                if length s == rotorNumber && and $ map isDigit s
-                then do
-                      let n = convertNumber n 
--}
-
 checkIsValidAlphas :: String -> Bool
 checkIsValidAlphas s = length s == rotorNumber && all isAlpha s 
 
@@ -114,8 +108,8 @@ checkIsValidNumbers s = let wss = words s
 
 getRotorTypes :: MaybeT IO [Int]
 getRotorTypes = MaybeT $ do 
-                  liftIO $ putStrLn "Enter 3 rotor types from rightmost to leftmost (123 = Rotor I, II, III)"
-                  liftIO $ putStrLn "Choose from 1 - 5"
+                  liftIO $ putStrLn "Choose 3 rotor types from 1 - 5 from the leftmost to rightmost (153 = Rotor I, V, III)"
+                  liftIO $ putStrLn "position in the machine"
                   s <- liftIO getLine
                   check s
                   where
@@ -129,7 +123,7 @@ getRotorTypes = MaybeT $ do
 getStartPos :: MaybeT IO [Int]
 getStartPos = do
                 liftIO $ putStrLn "Enter the start position of each rotor correspondingly"
-                liftIO $ putStrLn "(ABC means rotor I has start position A, II has start position B"
+                liftIO $ putStrLn "(ABC means the leftmost rotor has start position A, the middle rotor has start position B"
                 liftIO $ putStrLn "and so on) Choose from A - Z"
                 s <- liftIO getLine
                 check s
@@ -137,18 +131,11 @@ getStartPos = do
                  check s' 
                   | checkIsValidAlphas s' = MaybeT $ return $ Just (map (charToInt.toUpper) s')
                   | otherwise = MaybeT $ return Nothing
-{-
-getStartPos :: String -> Maybe [Int]
-getStartPos s 
-        | checkIsValidAlphas s = Just (map (charToInt.toUpper) s)
-        | otherwise = Nothing
--}
-
 
 getRingPos :: MaybeT IO [Int]
 getRingPos = do  
                 liftIO $ putStrLn "Enter the ring setting of each rotor correspondingly"
-                liftIO $ putStrLn "(1 25 0 means rotor I has ring setting of 1, II has ring setting of 25"
+                liftIO $ putStrLn "(1 25 0 means the leftmost rotor has ring setting of 1, the middle rotor has ring setting of 25"
                 liftIO $ putStrLn "and so on) Choose from 1 - 26"
                 s <- liftIO getLine
                 check s
@@ -157,13 +144,7 @@ getRingPos = do
                    | checkIsValidNumbers s' = MaybeT $ return $ Just $ map (\x -> (read x - 1) ::  Int) $ words s'
                    | otherwise = MaybeT $ return Nothing
 
-{-        
-getRingPos :: String -> Maybe [Int]
-getRingPos s  
-        | checkIsValidNumbers s = Just $ map (\x -> read x ::  Int) $ words s
-        | otherwise = Nothing                          
 
--}
 getRotorsInfo :: IO (Maybe ([Int], [Int], [Int]))
 getRotorsInfo = runMaybeT $ do 
                                  rt <- getRotorTypes
@@ -188,63 +169,13 @@ makeInvRotors n ((rt:rts), (sp:sps), (rs:rss)) = makeInvRotor rt n sp rs : makeI
 makeInvRotors _ _ = error "Impossibru!"
 
 
--- assumes n = rotorNumber
-{-
-setRotors' :: Int -> IO [(Rotor, Rotor)]
-setRotors' 0 = return []
-setRotors' n = do
-                tr <- chooseRotor (n - 1)
-                trs <- setRotors' (n - 1)
-                return (tr : trs)
--}
 setMachine :: IO Rotors
 setMachine = do
               (r, ir) <- setRotors 
               reflector <- setReflector
               plugboard <- setPlugboard ("","") 
               return ([plugboard] ++ r ++ [reflector] ++ ir ++ [plugboard]) 
-              -- later implemenation can include programmable plugboard / reflector
-
--- i is the position of the rotor to be chosen
-{-
-chooseRotor :: Int -> IO (Rotor, Rotor)
-chooseRotor i = do
-                putStrLn ""
-                putStrLn ("Choose rotor " ++ show (i + 1) ++ " (1 - 5)")
-                c <- getChar
-                if isDigit c then 
-                 let d = read [c] :: Int
-                 in go d
-                else chooseRotor i 
-                where
-                    go n 
-                     | n == 1 = do 
-                                r <- setRotor' i 
-                                let r' = r {turnover = r1Turnover, rotorWiring = setRing (ringSetting r) rotorIWiring}
-                                    ir = r {turnover = r1Turnover, rotorWiring = setRing (ringSetting r) invRotorIWiring}
-                                return (r' , ir)
-                     | n == 2 = do 
-                                r <- setRotor' i
-                                let r' = r {turnover = r2Turnover, rotorWiring = setRing (ringSetting r) rotorIIWiring} 
-                                    ir = r {turnover = r2Turnover, rotorWiring = setRing (ringSetting r) invRotorIIWiring} 
-                                return (r', ir) 
-                     | n == 3 = do 
-                                r <- setRotor' i
-                                let r' = r {turnover = r3Turnover, rotorWiring = setRing (ringSetting r) rotorIIIWiring} 
-                                    ir = r {turnover = r3Turnover, rotorWiring = setRing (ringSetting r) invRotorIIIWiring} 
-                                return (r', ir) 
-                     | n == 4 = do 
-                                r <- setRotor' i
-                                let r' = r {turnover = r4Turnover, rotorWiring = setRing (ringSetting r) rotorIVWiring}
-                                    ir = r {turnover = r4Turnover, rotorWiring = setRing (ringSetting r) invRotorIVWiring}
-                                return (r', ir)
-                     | n == 5 = do 
-                                r <- setRotor' i
-                                let r' = r {turnover = r5Turnover, rotorWiring = setRing (ringSetting r) rotorVWiring} 
-                                    ir = r {turnover = r5Turnover, rotorWiring = setRing (ringSetting r) invRotorVWiring}
-                                return (r', ir)       
-                     | otherwise = chooseRotor i 
--}
+              
 isValidChar :: Char -> Bool
 isValidChar = isAlpha  
 
@@ -265,27 +196,6 @@ convertChar c
     | otherwise = (-1)  
 
 
-{-
-setRotor' :: Int -> IO Rotor
-setRotor' i = do
-              putStrLn ""
-              putStrLn ("Choose rotor " ++ show (i + 1) ++ " start position (A - Z)")
-              c <- getChar
-              if isValidChar c
-              then do 
-                    putStrLn ""
-                    putStrLn ("Choose rotor " ++ show (i + 1) ++ " ring position (1 - 26)")
-                    s <- getLine 
-                    if isValidNumber s
-                    then do
-                          let sp = convertChar c 
-                              rs = convertNumber s
-                              r = Rotor i sp (rs - 1) sp 0 rotorIdWiring
-                              --ir = Rotor i sp (rs - 1) sp 0 rotorIdWiring
-                          return r
-                    else setRotor' i
-              else setRotor' i 
--}
 
 
               
