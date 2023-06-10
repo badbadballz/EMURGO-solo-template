@@ -55,6 +55,38 @@ type PlugBoard = [Int]
 
 type Reflector = [Int]
 
+cursorMovementExample :: IO ()
+cursorMovementExample = do
+  putStrLn "Line One"
+  putStr "Line Two"
+  --pause
+  -- Line One
+  -- Line Two
+
+  cursorUp 1
+  putStr " - Extras"
+  --pause
+  -- Line One - Extras
+  -- Line Two
+
+  cursorBackward 2
+  putStr "zz"
+  --pause
+  -- Line One - Extrzz
+  -- Line Two
+
+  cursorForward 2
+  putStr "- And More"
+  --pause
+  -- Line One - Extrzz  - And More
+  -- Line Two
+
+  cursorDown 3
+  putStr "Disconnected"
+  --pause
+  -- Line One - Extrzz  - And More
+  -- Line Two                     Disconnected
+
 test_byteString :: IO ()
 test_byteString = do 
                    s <- getLine
@@ -64,13 +96,15 @@ test_byteString = do
 
 test_getChar :: IO ()
 test_getChar = do
-                hSetBuffering stdout NoBuffering
-                hSetBuffering stdin  NoBuffering
-                c <- getLine
+                --hSetBuffering stdout NoBuffering
+                --hSetBuffering stdin  NoBuffering
+                clearScreen
+                putStrLn "hi----"
                 setSGR [SetColor Foreground Vivid Blue]
-                cursorDown 100
-                putStr c
-                test_getChar
+                cursorDownLine 10
+                putStrLn "hi"
+                setSGR [Reset]
+                --test_getChar
 
 test_ansi :: IO ()
 test_ansi = do 

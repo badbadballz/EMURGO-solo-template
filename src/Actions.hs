@@ -12,7 +12,8 @@ import qualified Data.Sequence as Seq
 import Data.Foldable (toList)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TO
-import Test
+import Control.Monad.Trans.Except
+--import Test
 
 printMachine :: Steps -> Tinput -> Toutput -> Eoutput -> Rotors -> IO (Tinput, Toutput) 
 printMachine stps input output eoutput rs = do
@@ -78,7 +79,7 @@ setReflector = do
 
 setPlugboard :: (String, String) -> IO Plugboard
 setPlugboard p@(p1, p2) = do
-                           putStrLn ("Enter plugboard letter pair(s) (AB for A-B pair, SE for S-E pair etc.), type QQ to finish - " ++ show (zip p1 p2 ))
+                           putStrLn ("Enter plugboard letter pair(s) (AB for A-B pair, SE for S-E pair etc.) one pair at a time, type QQ to finish - " ++ show (zip p1 p2 ))
                            s <- getLine
                            if length s == 2 then go (map toUpper s)
                            else do 
@@ -153,19 +154,76 @@ getRingPos = do
 
 
 getRotorsInfo :: IO (Maybe ([Int], [Int], [Int]))
-getRotorsInfo = runMaybeT $ do 
+getRotorsInfo =  runMaybeT $ do 
                                  rt <- getRotorTypes
                                  sp <- getStartPos
                                  rs <- getRingPos
                                  return (rt, sp, rs)
+
+getRotorTypes' :: IO [Int]
+getRotorTypes' = do 
+                  putStrLn "Choose 3 rotor types from 1 - 5 from the leftmost to rightmost (153 = Rotor I, V, III)"
+                  putStrLn "position in the machine"
+                  s <- getLine
+                  check s
+                  where
+                   checkRotorTypes = foldr (\x acc -> let x' = read [x] in 1 <= x' && x' <= rotorTypes && acc) True
+                   check s' 
+                    | length s' == rotorNumber && all isDigit s' = if checkRotorTypes s' 
+                                                        then return $ map (\n -> read [n] :: Int) s'
+                                                        else getRotorTypes'
+                    | otherwise = do
+                                    putStrLn "Invalid input!" 
+                                    getRotorTypes'
+
+getStartPos' :: IO [Int]
+getStartPos' = do
+                putStrLn "Enter the start position of each rotor correspondingly"
+                putStrLn "(ABC means the leftmost rotor has start position A, the middle rotor has start position B"
+                putStrLn "and so on) Choose from A - Z"
+                s <- getLine
+                check s
+                where 
+                 check s' 
+                  | checkIsValidAlphas s' = return $ map (charToInt.toUpper) s'
+                  | otherwise = do
+                                putStrLn "Invalid input!"
+                                getStartPos'
+
+getRingPos' :: IO [Int]
+getRingPos' = do  
+                putStrLn "Enter the ring setting of each rotor correspondingly"
+                putStrLn "(1 25 0 means the leftmost rotor has ring setting of 1, the middle rotor has ring setting of 25"
+                putStrLn "and so on) Choose from 1 - 26"
+                s <- getLine
+                check s
+                where 
+                  check s'
+                   | checkIsValidNumbers s' = return $ map (\x -> (read x - 1) ::  Int) $ words s'
+                   | otherwise = do
+                                  putStrLn "Invalid input!" 
+                                  getRingPos'
+
+
+
+getRotorsInfo' :: IO ([Int], [Int], [Int])
+getRotorsInfo' =  do 
+                                 rt <- getRotorTypes'
+                                 sp <- getStartPos'
+                                 rs <- getRingPos'
+                                 return (rt, sp, rs)
+
 setRotors :: IO (Rotors, Rotors)
 setRotors = do
-                rsInfo <- getRotorsInfo
+                rsInfo <- getRotorsInfo' 
                 let n = rotorNumber - 1
+                return (reverse $ makeRotors n rsInfo, makeInvRotors n rsInfo)
+                {-
                 case rsInfo of Just info -> return (reverse $ makeRotors n info, makeInvRotors n info)
                                Nothing -> do 
                                             putStrLn "Invalid input!"
                                             setRotors
+                -}
 
 makeRotors _ ([], [], []) = []
 makeRotors n ((rt:rts), (sp:sps), (rs:rss)) = makeRotor rt n sp rs : makeRotors (n - 1) (rts, sps, rss) 
