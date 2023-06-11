@@ -8,8 +8,8 @@ import Data.Char
 import System.Console.ANSI
 import Data.List (intersperse, foldl')
 import Control.Monad.State
-import qualified Data.Text as T
-import qualified Data.Text.IO as TO
+import qualified Data.Text as T (snoc, filter, length, Text)
+import qualified Data.Text.IO as TO (putStrLn)
 
 printMachine' :: (MonadIO m, MonadState MachineState' m) => [Letter] -> m ()
 printMachine' encrypted = do
@@ -75,8 +75,6 @@ pressKey' = do
                              encrypted <- iterateM' encrypt' (encrypt' c') (length rs) 
                              ms <- get
                              put (ms {getOutputs' = spaceText $ T.snoc (getOutputs' ms) (intToChar $ last encrypted)})
-                             --ms' <- get
-                             --put (ms' {getInputs' = spaceText $ getInputs' ms', getOutputs' = spaceText $ getOutputs' ms' })
                              return encrypted
                       else 
                         pressKey'

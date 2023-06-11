@@ -1,10 +1,8 @@
 module Types where
 
-
 import Data.Char
 import Test.QuickCheck (Arbitrary (arbitrary), shuffle, choose)
 import qualified Data.Text as T
-import qualified Data.Text.IO as TO
 
 data Rotor = Rotor { rotorPos :: Int
                    , startPos :: Int
@@ -137,8 +135,8 @@ rotorIWiring = map charToInt  "EKMFLGDQVZNTOWYHXUSPAIBRCJ"
 
 invRotorIWiring :: RotorWiring 
 invRotorIWiring = inverseRotorWiring rotorIWiring
---"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
---"UWYGADFPVZBECKMTHXSLRINQOJ"
+
+
 rotorIIWiring :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 rotorIIWiring = map charToInt  "AJDKSIRUXBLHWTMCQGZNPYFVOE"
 
@@ -192,10 +190,6 @@ makeReflector :: RotorWiring -> Reflector
 makeReflector = Rotor (-1) 0 0 0 0 
 
 -- reflectors and plugboards are modelled as non rotating rotors
-
--- plugboard with A-B, C-D pairings
---"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
---"BADCEFGHIJKLMNOPQRSTUVWXYZ"
 
 plugboardWiring :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 plugboardWiring = map charToInt  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
