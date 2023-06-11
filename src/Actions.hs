@@ -116,8 +116,8 @@ operate' ms = do
                 (_, ms') <- runStateT (pressKey' >>= printMachine') ms
                 operate' ms'
 
-pressKey' :: StateT MachineState' IO [Letter]
---pressKey' :: (MonadIO m, MonadState MachineState' m) => m [Letter]
+--pressKey' :: StateT MachineState' IO [Letter]
+pressKey' :: (MonadIO m, MonadState MachineState' m, MonadFail m) => m [Letter]
 pressKey' = do            
                c <- liftIO getChar
                if isValidChar c
