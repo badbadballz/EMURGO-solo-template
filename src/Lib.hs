@@ -6,8 +6,6 @@ import Types
 import Data.Char
 import Control.Monad.State
 import Control.Monad
-import qualified Data.Text as T 
-import Sandbox (testState)
 import Data.List (foldl')
 
 -- found this on reddit!
@@ -50,21 +48,6 @@ setRotor2 (r, n)
         in  (r', False)
   | otherwise = (r, False)
 
-{-
-data MachineState' = MachineState' {
-                       getSteps :: Int
-                     , getInputs' :: T.Text
-                     , getOutputs' :: T.Text
-                     , getRotors :: Rotors
-                     , getRotorT :: [Int]
-                     , getStartPositions :: [Int]
-                     , getRingSettings :: [Int] 
-                     , getReflector :: Char 
-                     , getPlugboard :: [(Char,Char)]}
--}
-
-
---encrypt' :: Letter -> StateT MachineState' IO Letter
 encrypt' :: (MonadIO m, MonadState MachineState' m) => Letter -> m Letter
 encrypt' l = state $ \ms -> 
                               let fr = head $ getRotors ms
@@ -82,26 +65,6 @@ passRotor l r
                     l' = rotorWiring r !! ((l + offset) `mod` rotorSize)
                 in (l' - offset) `mod` rotorSize
 
-
-encrypt :: Letter -> State MachineState Letter
-encrypt l = state (\s@(stps, outputs, rs) -> 
-                    if null rs then (l, s) else
-                    let result = passRotor l (head rs)
-                    in (result, (stps, result:outputs, tail rs)))
-
-pressKey :: Letter -> MachineState -> MachineState
-pressKey _ s@(_, _, []) = s
-pressKey l s = let (result, s') = runState (encrypt l) s
-               in pressKey result s'
-               
-
-nextStep :: Letter -> Steps -> Rotors -> (MachineState, Rotors)
-nextStep l stps [p0,r0,r1,r2,rf,ir2,ir1,ir0,p1] = 
-                                  let fr = nextRotorsTurns [r0,r1,r2] 
-                                      sr = reverse $ nextRotorsTurns [ir0,ir1,ir2]
-                                      rs = [p0] ++ fr ++ [rf] ++ sr ++ [p1]
-                                  in (pressKey l (stps + 1, [] , rs), rs) 
-nextStep _ _ _ = error "Impossibru!"
 
 configPlugboard :: RotorWiring -> ([Int], [Int]) -> RotorWiring 
 configPlugboard rw ([], _) = rw

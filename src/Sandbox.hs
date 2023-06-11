@@ -8,7 +8,6 @@ import Data.List (foldl', nub)
 --import Lib
 import qualified Types 
 import Text.Read (readMaybe)
-import Control.Monad.Trans
 import Control.Monad
 --import Data.Colour.SRGB 
 import System.Console.ANSI
@@ -16,6 +15,20 @@ import System.IO
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
 import qualified Data.Text.IO as TO
+import Control.Monad.Trans
+import Control.Monad.Trans.Maybe
+
+type MachineState = (Steps, Outputs, Rotors)
+type Inputs' = T.Text
+type Outputs' = T.Text
+type Outputs = [Letter]
+type Tinput = T.Text --Seq.Seq Char
+type Toutput = T.Text --Seq.Seq Char
+type Eoutput = String
+type RotorTypes = [Int]
+type StartPositions = [Int]
+type RingSettings = [Int]
+--type EOutputs' = [Letter] -- the intermediate outputs from the encryption of the letter
 --import Test
 
 --import Types (rotorIdWiring)
@@ -239,63 +252,160 @@ inverseRotor rss = let nullRotor = take 26 $ cycle [-1]
 
 testState = runState (mapM ((\x -> modify (x+)))  [1,2,3,4]) 10
 
-{-
-testRotorI :: Rotor      --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testRotorI = map charToInt "EKMFLGDQVZNTOWYHXUSPAIBRCJ"
+getStartPos :: MaybeT IO [Int]
+getStartPos = do
+                liftIO $ putStrLn "Enter the start position of each rotor correspondingly"
+                liftIO $ putStrLn "(ABC means the leftmost rotor has start position A, the middle rotor has start position B"
+                liftIO $ putStrLn "and so on) Choose from A - Z"
+                s <- liftIO getLine
+                check s
+                where 
+                 check s' 
+                  | checkIsValidAlphas s' = MaybeT $ return $ Just (map (charToInt.toUpper) s')
+                  | otherwise = MaybeT $ return Nothing
 
-invTestRotorI :: Rotor 
-invTestRotorI = inverseRotor testRotorI
---"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
---"UWYGADFPVZBECKMTHXSLRINQOJ"
-testRotorII :: Rotor      --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testRotorII = map charToInt "AJDKSIRUXBLHWTMCQGZNPYFVOE"
+getRingPos :: MaybeT IO [Int]
+getRingPos = do  
+                liftIO $ putStrLn "Enter the ring setting of each rotor correspondingly"
+                liftIO $ putStrLn "(1 25 0 means the leftmost rotor has ring setting of 1, the middle rotor has ring setting of 25"
+                liftIO $ putStrLn "and so on) Choose from 1 - 26"
+                s <- liftIO getLine
+                check s
+                where 
+                  check s'
+                   | checkIsValidNumbers s' = MaybeT $ return $ Just $ map (\x -> (read x - 1) ::  Int) $ words s'
+                   | otherwise = MaybeT $ return Nothing
 
-invTestRotorII :: Rotor
-invTestRotorII = inverseRotor testRotorII
 
-testRotorIII :: Rotor      --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testRotorIII = map charToInt "BDFHJLCPRTXVZNYEIWGAKMUSQO"
+getRotorsInfo :: IO (Maybe ([Int], [Int], [Int]))
+getRotorsInfo =  runMaybeT $ do 
+                                 rt <- getRotorTypes
+                                 sp <- getStartPos
+                                 rs <- getRingPos
+                                 return (rt, sp, rs)
 
-invTestRotorIII :: Rotor
-invTestRotorIII = inverseRotor testRotorIII
 
-testReflectorB :: Rotor      --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-testReflectorB = map charToInt "YRUHQSLDPXNGOKMIEBFZCWVJAT"
+getRotorTypes :: MaybeT IO [Int]
+getRotorTypes = MaybeT $ do 
+                  liftIO $ putStrLn "Choose 3 rotor types from 1 - 5 from the leftmost to rightmost (153 = Rotor I, V, III)"
+                  liftIO $ putStrLn "position in the machine"
+                  s <- liftIO getLine
+                  check s
+                  where
+                   checkRotorTypes = foldr (\x acc -> let x' = read [x] in 1 <= x' && x' <= rotorTypes && acc) True
+                   check s' 
+                    | length s' == rotorNumber && all isDigit s' = if checkRotorTypes s' 
+                                                        then return $ Just $ map (\n -> read [n] :: Int) s'
+                                                        else return Nothing
+                    | otherwise = return Nothing
 
---test321 :: Rotors
---test321 = [testRotorIII, testRotorII, testRotorI]
+printMachine :: Steps -> Tinput -> Toutput -> Eoutput -> Rotors -> IO (Tinput, Toutput) 
+printMachine stps input output eoutput rs = do
+                                             clearScreen
+                                             putStr "Steps - " 
+                                             putStr $ show stps 
+                                             cursorForward 5
+                                             setSGR [SetColor Foreground Vivid Green]
+                                             putStr "Rotors - " 
+                                             putStrLn (intersperse '-' $ map intToChar $ foldl' (\acc r -> turns r : acc) [] rs)
+                                             setSGR [Reset]
+                                             cursorDownLine 1
+                                             putStr "Input  - " 
+                                             TO.putStrLn input
+                                             cursorDownLine 1
+                                             putStrLn $ intersperse '>' $ reverse eoutput
+                                             cursorDownLine 1
+                                             setSGR [SetColor Foreground Vivid Yellow]
+                                             putStr "Output - " 
+                                             TO.putStrLn output
+                                             setSGR [Reset]
+                                             return (spaceText input, spaceText output)
 
-invTest123 :: Rotors
-invTest123 = [invTestRotorI, invTestRotorII, invTestRotorIII]
+operate :: Steps -> Tinput -> Toutput -> Rotors -> IO ()
+operate stps input output rs = do            
+                    putStrLn ""
+                    c <- getChar
+                    putStrLn ""
+                    if isValidChar c
+                    then do 
+                            let c' = (charToInt . toUpper) c
+                                ((stps', eoutput, _), rs') = nextStep c' stps rs
+                                alphas = map intToChar eoutput
+                                input' = T.snoc input (intToChar c')   --input Seq.|> intToChar c'  
+                                output' = T.snoc output (head alphas)  --output Seq.|> head alphas
+                                [_,r2,r1,r0,_,_,_,_,_] = rs'
+                            (input'', output'') <- printMachine stps' input' output' alphas [r2,r1,r0]
+                            operate stps' input'' output'' rs'
+                    else 
+                        operate stps input output rs
 
-testRotorHackADay :: Rotor
-testRotorHackADay = map charToInt "GETNDHQZUPBRCOXMKYAWFILSVJ"
+setReflector :: IO Reflector
+setReflector = do
+                putStrLn "Choose reflector (B or C)"
+                c <- getChar
+                go (toUpper c) 
+                where 
+                    go 'B' = do 
+                                putStrLn "" 
+                                return $ makeReflector reflectorBWiring
+                    go 'C' = do 
+                                putStrLn "" 
+                                return $ makeReflector reflectorCWiring
+                    go _ = do
+                            putStrLn "Invalid input!"
+                            setReflector
 
-testRotorsHackADay :: Rotors
-testRotorsHackADay = [testRotorHackADay]
+setPlugboard :: (String, String) -> IO Plugboard
+setPlugboard p@(p1, p2) = do
+                           putStrLn ("Enter plugboard letter pair(s) (AB for A-B pair, SE for S-E pair etc.) one pair at a time, type QQ to finish - " ++ show (zip p1 p2 ))
+                           s <- getLine
+                           if length s == 2 then go (map toUpper s)
+                           else do 
+                                putStrLn "Invalid input!"
+                                setPlugboard p
+                           where 
+                            go "QQ" = do
+                                        let p = configPlugboard rotorIdWiring (map charToInt p1, map charToInt p2)
+                                        return $ makePlugboard p
+                            go [c1,c2] = if isValidChar c1 && isValidChar c2 &&
+                                                     notElem c1 p1 && notElem c1 p2 &&
+                                                     notElem c2 p1 && notElem c2 p2 && c1 /= c2 then
+                                                     setPlugboard (toUpper c1:p1, toUpper c2:p2)
+                                                     else do
+                                                            putStrLn "Invalid input!"
+                                                            setPlugboard p
+                            go _ = do
+                                    putStrLn "Invalid input!"
+                                    setPlugboard p
 
-testRotor0 :: Rotor
-testRotor0 = map charToInt ['A'..'Z']
+setMachine :: IO Rotors
+setMachine = do
+              (r, ir) <- setRotors 
+              reflector <- setReflector
+              plugboard <- setPlugboard ("","") 
+              return ([plugboard] ++ r ++ [reflector] ++ ir ++ [plugboard]) 
 
-testRotor1 :: Rotor
-testRotor1 = map charToInt "PFBUEKDIHOXRANJYLSGZMWQVTC"
+setRotors :: IO (Rotors, Rotors)
+setRotors = do
+                rsInfo <- getRotorsInfo' 
+                let n = rotorNumber - 1
+                return (reverse $ makeRotors n rsInfo, makeInvRotors n rsInfo)
 
---iTestRotor1 :: Rotor
---iTestRotor1 = 
+encrypt :: Letter -> State MachineState Letter
+encrypt l = state (\s@(stps, outputs, rs) -> 
+                    if null rs then (l, s) else
+                    let result = passRotor l (head rs)
+                    in (result, (stps, result:outputs, tail rs)))
 
-testRotor2 :: Rotor
-testRotor2 = map charToInt "BOAPMFQGKJWZIDRLYHCSVUTXEN"
+pressKey :: Letter -> MachineState -> MachineState
+pressKey _ s@(_, _, []) = s
+pressKey l s = let (result, s') = runState (encrypt l) s
+               in pressKey result s'
 
-testRotor3 :: Rotor
-testRotor3 = map charToInt "EWPZLXYAUOVCTGKBMIHDFRSJQN"
-
-testRotors0 :: Rotors
-testRotors0 = replicate rotorNumber testRotor0
-
-testRotors1 :: Rotors
-testRotors1 = [testRotor1, testRotor2]
-
-testRotors2 :: Rotors
-testRotors2 = [testRotor0]
-
--}
+nextStep :: Letter -> Steps -> Rotors -> (MachineState, Rotors)
+nextStep l stps [p0,r0,r1,r2,rf,ir2,ir1,ir0,p1] = 
+                                  let fr = nextRotorsTurns [r0,r1,r2] 
+                                      sr = reverse $ nextRotorsTurns [ir0,ir1,ir2]
+                                      rs = [p0] ++ fr ++ [rf] ++ sr ++ [p1]
+                                  in (pressKey l (stps + 1, [] , rs), rs) 
+nextStep _ _ _ = error "Impossibru!"

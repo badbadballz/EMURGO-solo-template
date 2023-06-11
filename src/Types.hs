@@ -2,8 +2,7 @@ module Types where
 
 
 import Data.Char
-import Test.QuickCheck 
-import qualified Data.Sequence as Seq
+import Test.QuickCheck (Arbitrary (arbitrary), shuffle, choose)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TO
 
@@ -14,11 +13,6 @@ data Rotor = Rotor { rotorPos :: Int
                    , turnover :: Int 
                    , rotorWiring :: RotorWiring} deriving (Eq, Show) 
 
---data Rotor = Rotor RotorPos StartPos RingSetting Turns Turnover RotorWiring deriving (Eq, Show)
-
-data MachineException = InvalidTypes | InvalidStartPos | InvalidRingSetting
-
--- updating machineState for use with monad transformers?
 data MachineState' = MachineState' {
                        getSteps :: Int
                      , getInputs' :: T.Text
@@ -40,21 +34,6 @@ type Plugboard = Rotor
 type Steps = Int
 type RotorWiring = [Int]
 type Letter = Int 
-
-type Inputs' = T.Text
-type Outputs' = T.Text
-type Outputs = [Letter]
---type EOutputs' = [Letter] -- the intermediate outputs from the encryption of the letter
-type RotorTypes = [Int]
-type StartPositions = [Int]
-type RingSettings = [Int]
-
-
-type MachineState = (Steps, Outputs, Rotors)
-
-type Tinput = T.Text --Seq.Seq Char
-type Toutput = T.Text --Seq.Seq Char
-type Eoutput = String
 
 upperAlphaOffset = 65
 
@@ -107,9 +86,10 @@ cycleList n xs = cycleList (n - 1) $ last xs : init xs
 r1Turnover :: Int
 r1Turnover = 16 
 
+-- Rotor types implementations
+
 rotorI :: Rotor
 rotorI = Rotor 0 0 0 0 16 (setRing 0 rotorIWiring) 
---Rotor 0 3 1 (ringSetting 1 testRotorI) 
 
 invRotorI :: Rotor
 invRotorI = Rotor 0 0 0 0 16 (setRing 0 invRotorIWiring)
@@ -149,7 +129,6 @@ rotorV = Rotor 1 8 0 8 25 (setRing 0 rotorVWiring)
 
 invRotorV :: Rotor
 invRotorV = Rotor 1 8 0 8 25 (setRing 0 invRotorVWiring)
-
 
 
 rotorIWiring :: RotorWiring --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
