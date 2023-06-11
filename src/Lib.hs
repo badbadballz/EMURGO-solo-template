@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Lib where
 
 import Types
@@ -62,7 +64,8 @@ data MachineState' = MachineState' {
 -}
 
 
-encrypt' :: Letter -> StateT MachineState' IO Letter
+--encrypt' :: Letter -> StateT MachineState' IO Letter
+encrypt' :: (MonadIO m, MonadState MachineState' m) => Letter -> m Letter
 encrypt' l = state $ \ms -> 
                               let fr = head $ getRotors ms
                                   tr = tail $ getRotors ms

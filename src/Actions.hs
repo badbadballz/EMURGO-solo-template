@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Actions where
 
 import Lib
@@ -21,7 +23,8 @@ import Control.Monad
 import Data.Functor.Identity
 
 
-printMachine' :: [Letter] -> StateT MachineState' IO ()
+--printMachine' :: [Letter] -> StateT MachineState' IO ()
+printMachine' :: (MonadIO m, MonadState MachineState' m) => [Letter] -> m ()
 printMachine' encrypted = do
                     ms <- get
                     liftIO clearScreen
@@ -32,7 +35,7 @@ printMachine' encrypted = do
                     liftIO $ putStr "Rotor types - "
                     liftIO $ putStrLn $ printRotorTypes $ getRotorT ms
                     liftIO $ putStr "Start positions - "
-                    liftIO $ print $ map intToChar $ getStartPositions ms
+                    liftIO $ print $ intersperse ' ' $ map intToChar $ getStartPositions ms
                     liftIO $ putStr "Ring settings - "
                     liftIO $ print $ map (+1) $ getRingSettings ms
                     liftIO $ putStr "Reflector -  "
@@ -114,6 +117,7 @@ operate' ms = do
                 operate' ms'
 
 pressKey' :: StateT MachineState' IO [Letter]
+--pressKey' :: (MonadIO m, MonadState MachineState' m) => m [Letter]
 pressKey' = do            
                c <- liftIO getChar
                if isValidChar c
