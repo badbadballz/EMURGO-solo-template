@@ -24,7 +24,7 @@ printMachine' encrypted = do
                     liftIO $ print $ intersperse ' ' $ map intToChar $ getStartPositions ms
                     liftIO $ putStr "Ring settings - "
                     liftIO $ print $ map (+1) $ getRingSettings ms
-                    liftIO $ putStr "Reflector -  "
+                    liftIO $ putStr "Reflector - "
                     liftIO $ putChar $ getReflector ms
                     liftIO $ putStrLn ""
                     liftIO $ putStr "Plugboard settings - "
@@ -214,24 +214,6 @@ setMachine' = do
                  return ems {getRotors = rs, getRotorT = tys, getStartPositions = sps,
                              getRingSettings = rss, getReflector = ref, getPlugboard = zip p1 p2 }
               
-isValidChar :: Char -> Bool
-isValidChar = isAlpha  
-
-isValidNumber :: String -> Bool
-isValidNumber s     
-    | all isDigit s = let result = read s :: Int
-                              in 1 <= result && result <= rotorSize
-    | otherwise = False
-
-convertNumber :: String -> Int
-convertNumber s 
-    | all isDigit s = read s :: Int 
-    | otherwise = (-1)
-
-convertChar :: Char -> Int
-convertChar c 
-    | isAlpha c = (charToInt . toUpper) c 
-    | otherwise = (-1)  
 
 
 

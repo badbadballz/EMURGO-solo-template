@@ -88,3 +88,22 @@ printRotorTypes (t:ts) = case t of 1 -> "I " ++ printRotorTypes ts
 printRotorTurnsHelper :: Rotors -> String
 printRotorTurnsHelper [_,r0,r1,r2,_,_,_,_,_] = map intToChar $ foldl' (\acc r -> turns r : acc) [] [r0,r1,r2]
 printRotorTurnsHelper _ = ""
+
+isValidChar :: Char -> Bool
+isValidChar = isAlpha  
+
+isValidNumber :: String -> Bool
+isValidNumber s     
+    | all isDigit s = let result = read s :: Int
+                              in 1 <= result && result <= rotorSize
+    | otherwise = False
+
+convertNumber :: String -> Int
+convertNumber s 
+    | all isDigit s = read s :: Int 
+    | otherwise = (-1)
+
+convertChar :: Char -> Int
+convertChar c 
+    | isAlpha c = (charToInt . toUpper) c 
+    | otherwise = (-1)  
