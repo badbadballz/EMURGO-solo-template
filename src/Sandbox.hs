@@ -409,3 +409,9 @@ nextStep l stps [p0,r0,r1,r2,rf,ir2,ir1,ir0,p1] =
                                       rs = [p0] ++ fr ++ [rf] ++ sr ++ [p1]
                                   in (pressKey l (stps + 1, [] , rs), rs) 
 nextStep _ _ _ = error "Impossibru!"
+
+makeState :: MachineState
+makeState = (0, [], makeRotors')
+
+makeState1 :: MachineState
+makeState1 = (0, [], makeRotors1')

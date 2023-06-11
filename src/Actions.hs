@@ -60,6 +60,8 @@ operate' ms = do
                 (_, ms') <- runStateT (pressKey' >>= printMachine') ms
                 operate' ms'
 
+-- StateT MachineState' IO [Letter]
+
 pressKey' :: (MonadIO m, MonadState MachineState' m, MonadFail m) => m [Letter]
 pressKey' = do            
                c <- liftIO getChar
@@ -187,11 +189,12 @@ getRotorsInfo' =  do
                                  rs <- getRingPos'
                                  return (rt, sp, rs)
             
-
+makeRotors :: Int -> ([Int], [Int], [Int]) -> Rotors
 makeRotors _ ([], [], []) = []
 makeRotors n ((rt:rts), (sp:sps), (rs:rss)) = makeRotor rt n sp rs : makeRotors (n - 1) (rts, sps, rss) 
 makeRotors _ _ = error "Impossibru!"
-                 
+
+makeInvRotors :: Int -> ([Int], [Int], [Int]) -> Rotors
 makeInvRotors _ ([], [], []) = []
 makeInvRotors n ((rt:rts), (sp:sps), (rs:rss)) = makeInvRotor rt n sp rs : makeInvRotors (n - 1) (rts, sps, rss) 
 makeInvRotors _ _ = error "Impossibru!"

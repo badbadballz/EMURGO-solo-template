@@ -136,11 +136,7 @@ testMachineState1 = MachineState' {getSteps = 0, getInputs' = T.empty, getOutput
 -- C V III IV XEB AB GC RT SE
 testMachineState2 = MachineState' {getSteps = 0, getInputs' = T.empty, getOutputs' = T.empty, getRotors = [Rotor {rotorPos = -1, startPos = 0, ringSetting = 0, turns = 0, turnover = 0, rotorWiring = [1,0,6,3,18,5,2,7,8,9,10,11,12,13,14,15,16,19,4,17,20,21,22,23,24,25]},Rotor {rotorPos = 0, startPos = 1, ringSetting = 17, turns = 1, turnover = 9, rotorWiring = [7,11,25,8,24,14,2,4,22,10,23,1,20,19,3,13,18,21,9,5,12,6,16,0,17,15]},Rotor {rotorPos = 1, startPos = 4, ringSetting = 19, turns = 4, turnover = 21, rotorWiring = [8,10,12,16,14,18,6,17,23,1,15,25,19,3,5,13,11,9,7,20,22,24,0,2,4,21]},Rotor {rotorPos = 2, startPos = 23, ringSetting = 1, turns = 23, turnover = 25, rotorWiring = [11,22,0,2,18,7,9,20,25,21,16,19,4,14,8,12,24,1,23,13,10,17,15,6,5,3]},Rotor {rotorPos = -1, startPos = 0, ringSetting = 0, turns = 0, turnover = 0, rotorWiring = [5,21,15,9,8,0,14,24,4,3,17,25,23,22,6,2,19,10,20,16,18,1,13,12,7,11]},Rotor {rotorPos = 2, startPos = 23, ringSetting = 1, turns = 23, turnover = 25, rotorWiring = [2,17,3,25,12,24,23,5,14,6,20,0,15,19,13,22,10,21,4,11,7,9,1,18,16,8]},Rotor {rotorPos = 1, startPos = 4, ringSetting = 19, turns = 4, turnover = 21, rotorWiring = [22,9,23,13,24,14,6,18,0,17,1,16,2,15,4,10,3,7,5,12,19,25,20,8,21,11]},Rotor {rotorPos = 0, startPos = 1, ringSetting = 17, turns = 1, turnover = 9, rotorWiring = [23,11,6,14,7,19,21,0,3,18,9,1,20,15,5,25,22,24,16,13,12,17,8,10,4,2]},Rotor {rotorPos = -1, startPos = 0, ringSetting = 0, turns = 0, turnover = 0, rotorWiring = [1,0,6,3,18,5,2,7,8,9,10,11,12,13,14,15,16,19,4,17,20,21,22,23,24,25]}], getRotorT = [5,3,4], getStartPositions = [23,4,1], getRingSettings = [1,19,17], getReflector = 'C', getPlugboard = [('S','E'),('R','T'),('G','C'),('A','B')]}
 
-makeState :: MachineState
-makeState = (0, [], makeRotors')
 
-makeState1 :: MachineState
-makeState1 = (0, [], makeRotors1')
 
 makeRotors' :: Rotors
 makeRotors' = [rotorI, reflectorB, invRotorI] 
