@@ -26,7 +26,7 @@ Used the online Enigma machine to encrypt inputs and check if this implementatio
 
 * Better machine setup interface, it is a little annoying at the moment
 * A quicker printout of the machine infomation, at the moment it is inefficent 
-* Using better data structures, better alogithms to optimise the code
+* Using better data structures, better alogrithms to optimise the code
 * More information displayed like machine settings
 
 

@@ -16,13 +16,40 @@ data Rotor = Rotor { rotorPos :: Int
 
 --data Rotor = Rotor RotorPos StartPos RingSetting Turns Turnover RotorWiring deriving (Eq, Show)
 
+data MachineException = InvalidTypes | InvalidStartPos | InvalidRingSetting
+
+-- updating machineState for use with monad transformers?
+data MachineState' = MachineState' {
+                       getSteps :: Int
+                     , getInputs' :: T.Text
+                     , getOutputs' :: T.Text
+                     , getRotors :: Rotors
+                     , getRotorT :: [Int]
+                     , getStartPositions :: [Int]
+                     , getRingSettings :: [Int] 
+                     , getReflector :: Char 
+                     , getPlugboard :: [(Char,Char)]} deriving (Eq, Show)
+
+
+emptyMachineState :: MachineState'
+emptyMachineState = MachineState' 0 T.empty T.empty [] [] [] [] '0' [('0','0')]
+
 type Rotors = [Rotor]
 type Reflector = Rotor
 type Plugboard = Rotor
 type Steps = Int
 type RotorWiring = [Int]
 type Letter = Int 
+
+type Inputs' = T.Text
+type Outputs' = T.Text
 type Outputs = [Letter]
+--type EOutputs' = [Letter] -- the intermediate outputs from the encryption of the letter
+type RotorTypes = [Int]
+type StartPositions = [Int]
+type RingSettings = [Int]
+
+
 type MachineState = (Steps, Outputs, Rotors)
 
 type Tinput = T.Text --Seq.Seq Char

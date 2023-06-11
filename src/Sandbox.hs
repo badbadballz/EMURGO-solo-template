@@ -4,17 +4,19 @@ import Data.Char
 import System.Random.Stateful (uniformM, globalStdGen, randomRIO)
 import Control.Monad.State
 import Data.List (foldl', nub)
-import Actions
-import Lib
-import qualified Types as T
+--import Actions
+--import Lib
+import qualified Types 
 import Text.Read (readMaybe)
 import Control.Monad.Trans
+import Control.Monad
 --import Data.Colour.SRGB 
 import System.Console.ANSI
 import System.IO
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
 import qualified Data.Text.IO as TO
+--import Test
 
 --import Types (rotorIdWiring)
 
@@ -54,6 +56,29 @@ type MachineState = (Steps, Rotors)
 type PlugBoard = [Int]
 
 type Reflector = [Int]
+
+test_runStateT :: Int -> IO ((), Int)
+test_runStateT = runStateT (addStateT >> addStateT >> addStateT) 
+
+
+addStateT :: StateT Int IO ()
+addStateT = do
+                c <- liftIO getChar
+                if isDigit c 
+                then do
+                        let n = read [c] :: Int
+                        i <- get
+                        put (i + n)
+                else 
+                        addStateT 
+
+
+--x = iterateM (encrypt') (encrypt' 5) 9
+--runState x testMachineState2
+
+maybeAdd :: Int -> Int -> Maybe Int
+maybeAdd n m = if n > 10 then Just (n + m)
+                else Nothing
 
 cursorMovementExample :: IO ()
 cursorMovementExample = do
@@ -214,6 +239,7 @@ inverseRotor rss = let nullRotor = take 26 $ cycle [-1]
 
 testState = runState (mapM ((\x -> modify (x+)))  [1,2,3,4]) 10
 
+{-
 testRotorI :: Rotor      --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 testRotorI = map charToInt "EKMFLGDQVZNTOWYHXUSPAIBRCJ"
 
@@ -236,8 +262,8 @@ invTestRotorIII = inverseRotor testRotorIII
 testReflectorB :: Rotor      --"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 testReflectorB = map charToInt "YRUHQSLDPXNGOKMIEBFZCWVJAT"
 
-test321 :: Rotors
-test321 = [testRotorIII, testRotorII, testRotorI]
+--test321 :: Rotors
+--test321 = [testRotorIII, testRotorII, testRotorI]
 
 invTest123 :: Rotors
 invTest123 = [invTestRotorI, invTestRotorII, invTestRotorIII]
@@ -271,3 +297,5 @@ testRotors1 = [testRotor1, testRotor2]
 
 testRotors2 :: Rotors
 testRotors2 = [testRotor0]
+
+-}
